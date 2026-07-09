@@ -1,0 +1,36 @@
+@startuml rag-flow
+title RAG Pipeline: Ingestion and Retrieval
+
+skinparam backgroundColor #0f172a
+skinparam defaultFontColor #e2e8f0
+skinparam activity {
+  BackgroundColor #1e293b
+  BorderColor #3757f0
+  DiamondBackgroundColor #1e293b
+  DiamondBorderColor #f59e0b
+}
+
+partition "Ingestion (document upload, knowledge-base bootstrap, meeting transcript indexing)" {
+  start
+  :Source document\n(.md / .txt / .pdf) or\nmeeting transcript;
+  :Text extraction\n(pdf-parse for PDFs,\nplain read for .md/.txt);
+  :Chunking\n(sliding window,\n~180 words, 30-word overlap);
+  :Embedding generation\n(Xenova/all-MiniLM-L6-v2,\nlocal, 384 dimensions);
+  :Upsert chunks + metadata\n(source, customerId, documentType,\ndocumentId, chunkIndex)\ninto Qdrant;
+  :Persist document metadata\nin MongoDB (documents collection);
+  stop
+}
+
+partition "Retrieval (at agent query time)" {
+  start
+  :Agent decides it needs\ngrounded knowledge;
+  :searchKnowledgeBase tool\ncalled with natural-language query\n(+ optional customerId / documentType filter);
+  :Embed query with the same\nlocal embedding model;
+  :Qdrant cosine-similarity search\n(top-K, optional metadata filter);
+  :Return ranked chunks\n(text, score, source metadata)\nto the agent;
+  :Agent cites sources and grounds\nits answer in retrieved text;
+  :Frontend renders sources in\nthe Agent Activity View panel;
+  stop
+}
+
+@enduml

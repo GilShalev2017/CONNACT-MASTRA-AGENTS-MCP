@@ -1,0 +1,115 @@
+[
+  {
+    "meetingId": "mtg-acme-2026-05-12",
+    "customerId": "cust-acme-mfg",
+    "title": "Acme Manufacturing - Azure Migration Discovery Call",
+    "date": "2026-05-12",
+    "attendees": ["Dana Whitfield (Account Owner)", "Robert Kim (Acme VP Infrastructure)", "Sylvia Ortiz (Acme CISO)"],
+    "transcript": "Dana: Thanks for joining. Last time we talked about moving your factory telemetry workloads to Azure IoT Hub. Where does the security review stand?\nSylvia: We're still waiting on the CISO office to finish the vendor risk assessment. It's been in queue for three weeks. I'd estimate another two to three weeks before we get sign-off.\nRobert: The bigger blocker on my side is the SCADA integration. Our factory floor systems talk to AWS Direct Connect right now and re-architecting that is not trivial. We need a phased plan, not a big-bang cutover.\nDana: That makes sense. We can propose a phased migration starting with non-critical telemetry streams, then move toward the SCADA-adjacent workloads once the security review clears.\nRobert: Also, our EU plants have new data residency requirements coming into effect next quarter. Anything we do needs to keep EU telemetry data within EU regions.\nDana: Understood, we'll scope an EU landing zone as part of the proposal. I'll follow up with a phased migration plan and cost estimate by end of next week.\nSylvia: One more thing - we'd want a joint security review session with your team before any production data moves.\nDana: Absolutely, I'll set that up once the vendor risk assessment clears.",
+    "summary": "Acme is interested in migrating factory telemetry to Azure IoT Hub but is blocked by an in-progress CISO vendor risk assessment (2-3 weeks out) and needs a phased migration plan due to tight SCADA/AWS Direct Connect coupling. New EU data residency requirements mean an EU landing zone is required. Next step: phased migration proposal with EU landing zone scope, plus a joint security review once risk assessment clears.",
+    "sentiment": "cautiously positive",
+    "actionItems": [
+      "Send phased migration proposal with cost estimate by 2026-05-19",
+      "Scope EU landing zone for data residency compliance",
+      "Schedule joint security review session once CISO vendor risk assessment clears"
+    ],
+    "risks": [
+      "Vendor risk assessment delay could push timeline past Acme's internal budget cycle",
+      "SCADA/AWS Direct Connect coupling increases migration complexity and cost"
+    ]
+  },
+  {
+    "meetingId": "mtg-northwind-2026-06-02",
+    "customerId": "cust-northwind-retail",
+    "title": "Northwind Retail - FinOps Optimization Review",
+    "date": "2026-06-02",
+    "attendees": ["Marcus Chen (Account Owner)", "Elena Petrov (Northwind Cloud Platform Lead)"],
+    "transcript": "Marcus: We pulled your Q2 spend data and found about 18% of your compute is idle outside of peak retail hours.\nElena: That tracks. We over-provisioned ahead of last year's holiday season and never scaled back down. It's been a recurring conversation internally but nobody owns the cleanup.\nMarcus: We can help with an autoscaling redesign before Q4 hits. Also noticed you're running six separate AKS clusters across regions with a lot of duplicated control-plane overhead.\nElena: Yes, that happened organically as different regional teams spun up their own clusters. Consolidating them is on our roadmap but it's a heavy lift politically, not just technically.\nMarcus: Understood. We could start with a tagging and cost-attribution project so each region sees their real spend, which usually builds the internal case for consolidation.\nElena: That would help a lot. Right now nobody can tell me which team owns which cost.\nMarcus: I'll put together a FinOps tagging proposal and a phased AKS consolidation roadmap, targeting savings before the holiday peak.",
+    "summary": "Northwind has significant idle compute (about 18%) from holiday overprovisioning that was never scaled back, and runs six regionally fragmented AKS clusters with duplicated overhead. Political rather than technical barriers block consolidation. Plan: start with a FinOps tagging/cost-attribution initiative to build internal buy-in, followed by a phased AKS consolidation roadmap, targeting completion before Q4 holiday peak.",
+    "sentiment": "positive",
+    "actionItems": [
+      "Deliver FinOps tagging and cost-attribution proposal",
+      "Draft phased AKS consolidation roadmap",
+      "Design autoscaling changes ahead of Q4 holiday peak"
+    ],
+    "risks": [
+      "Political resistance to AKS consolidation across regional teams",
+      "Q4 timeline is tight for both tagging rollout and consolidation"
+    ]
+  },
+  {
+    "meetingId": "mtg-heliocare-2026-04-20",
+    "customerId": "cust-heliocare-health",
+    "title": "HelioCare Health - Executive Alignment Call",
+    "date": "2026-04-20",
+    "attendees": ["Priya Nair (Account Owner)", "Dr. Anita Reyes (HelioCare New CIO)"],
+    "transcript": "Priya: Congratulations on the new role. I know our prior conversations were with your predecessor, so I want to make sure we're aligned on where things stand.\nAnita: Appreciate that. Honestly, I'm still getting briefed on the cloud initiative. My understanding is there was interest in Azure for patient records, but nothing formal has been approved.\nPriya: Correct, we had scoped Azure Health Data Services for FHIR-compliant patient records, but the process paused during the leadership transition.\nAnita: My priority right now is making sure any cloud move doesn't create HIPAA compliance risk. We have a fairly lean cloud engineering team, maybe two people total.\nPriya: That's actually a strong case for a managed landing zone approach - it reduces the ongoing engineering burden significantly.\nAnita: I'd want to see a compliance-first proposal, ideally with references from other healthcare customers, before I bring this to our board.\nPriya: I'll put together a HIPAA-focused proposal with reference case studies and a lightweight managed landing zone model.",
+    "summary": "HelioCare has a new CIO who is still being briefed; the prior Azure Health Data Services initiative for patient records paused during the leadership transition. The CIO's top priority is HIPAA compliance risk and the account has very limited internal cloud engineering capacity (2 people), making a managed landing zone attractive. Next step: compliance-first proposal with healthcare reference case studies for board approval.",
+    "sentiment": "neutral, restart in progress",
+    "actionItems": [
+      "Prepare HIPAA-focused proposal with healthcare reference case studies",
+      "Propose managed landing zone model given limited internal cloud engineering headcount",
+      "Re-establish executive sponsorship following CIO transition"
+    ],
+    "risks": [
+      "Stakeholder change resets momentum and could delay the deal materially",
+      "Board approval required before any commitment"
+    ]
+  },
+  {
+    "meetingId": "mtg-fintrust-2026-05-28",
+    "customerId": "cust-fintrust-bank",
+    "title": "FinTrust Bank - Multi-cloud Strategy Session",
+    "date": "2026-05-28",
+    "attendees": ["Dana Whitfield (Account Owner)", "George Papadakis (FinTrust Head of Infrastructure)", "Linda Osei (FinTrust Compliance Officer)"],
+    "transcript": "George: Our board has been clear - we are not going all-in on a single cloud provider again. Whatever we do with Azure needs to coexist with our existing AWS footprint.\nDana: Understood, this would be a multi-cloud architecture, not a migration away from AWS.\nLinda: Any workload movement also needs regulatory sign-off. We can't move core banking data across regions without approval, and that process typically takes 60-90 days.\nGeorge: The mainframe integration is also a challenge. Our core banking system has direct dependencies that aren't cloud-native at all.\nDana: For a first step, would disaster recovery be an easier entry point? Using Azure as a secondary DR region wouldn't require moving primary workloads.\nGeorge: That's actually appealing. It gives us a real multi-cloud story without touching the core banking dependencies yet.\nLinda: I'd still need to review it, but DR is a lower-risk category from a compliance standpoint than moving primary data.\nDana: I'll draft a DR-focused proposal using Azure ExpressRoute and Arc-enabled data services as the starting point.",
+    "summary": "FinTrust's board mandate is explicit multi-cloud, not AWS replacement, and any data movement requires 60-90 day regulatory approval. Mainframe/core banking dependencies make a direct migration hard. The team agreed a disaster-recovery use case on Azure is the lowest-risk entry point and doesn't require moving primary workloads or waiting on the full regulatory process for core data.",
+    "sentiment": "positive",
+    "actionItems": [
+      "Draft DR-focused proposal using Azure ExpressRoute and Arc-enabled data services",
+      "Begin regulatory approval process early given 60-90 day lead time",
+      "Scope mainframe integration constraints before any primary workload discussion"
+    ],
+    "risks": [
+      "Regulatory approval timeline could stall momentum",
+      "Mainframe dependencies limit scope of near-term migration opportunities"
+    ]
+  },
+  {
+    "meetingId": "mtg-summit-2026-06-10",
+    "customerId": "cust-summit-logistics",
+    "title": "Summit Logistics - Renewal Urgency Call",
+    "date": "2026-06-10",
+    "attendees": ["Marcus Chen (Account Owner)", "Tomas Reyes (Summit Head of Data)"],
+    "transcript": "Tomas: Our GCP contract renews in four months and honestly the BigQuery costs have gotten out of control for our analytics workloads.\nMarcus: What's driving the overrun - query volume, storage, or both?\nTomas: Mostly ad hoc queries from our data science team, plus we're about to need GPU capacity for a new route optimization model that GCP hasn't been able to price competitively for us.\nMarcus: Azure Synapse could handle the analytics migration, and Azure ML has GPU clusters that would fit the route optimization use case well. Given your renewal timing, we could also put together an aggressive offer if you're able to move before the GCP contract renews.\nTomas: That timing matters a lot to us. If we can get a credible migration plan and pricing in the next 6-8 weeks, we could realistically avoid renewing with GCP at all.\nMarcus: I'll prioritize this - we'll get a Synapse migration plan and Azure ML GPU pricing to you within two weeks so you have room to negotiate or decide before the GCP deadline.\nTomas: Appreciate the urgency. This is genuinely time-sensitive for us.",
+    "summary": "Summit's GCP contract renews in 4 months, and current BigQuery analytics costs are overrunning, compounded by an upcoming GPU need for a new route optimization model that GCP can't price competitively. Time-sensitive opportunity: a Synapse migration plan plus Azure ML GPU pricing within 2 weeks could let Summit avoid renewing with GCP altogether.",
+    "sentiment": "urgent, positive",
+    "actionItems": [
+      "Deliver Azure Synapse Analytics migration plan within 2 weeks",
+      "Provide Azure ML GPU cluster pricing for route optimization workload",
+      "Track GCP renewal deadline as a hard timeline driver"
+    ],
+    "risks": [
+      "Missing the 6-8 week window risks losing the deal to a GCP renewal by default",
+      "GPU capacity planning adds technical complexity to an already tight timeline"
+    ]
+  },
+  {
+    "meetingId": "mtg-brightwave-2026-06-18",
+    "customerId": "cust-brightwave-media",
+    "title": "Brightwave Media - Cost & AI Opportunity Review",
+    "date": "2026-06-18",
+    "attendees": ["Priya Nair (Account Owner)", "Wei Zhang (Brightwave VP Engineering)"],
+    "transcript": "Wei: Our transcoding bill keeps climbing faster than our content library growth, which doesn't make sense on paper.\nPriya: We looked at your storage tiering and a lot of rarely-accessed content is still sitting in hot storage.\nWei: Yeah, we never built a real lifecycle policy. It's been 'store everything hot just in case.'\nPriya: We can design an Azure Media Services tiering policy to move cold archive content down automatically, that alone should meaningfully cut storage costs.\nWei: That would help. Separately, we've been getting pressure from the content team to do more with AI - automatic tagging, searchable video, that kind of thing.\nPriya: That's a great fit for AI-based video indexing - it could also open up new monetization angles if you can make your archive searchable and discoverable.\nWei: If you can bundle a cost-savings win with something that also excites the content team, that's an easy internal sell for me.\nPriya: I'll put together a proposal that pairs the tiering policy savings with a pilot for AI video indexing.",
+    "summary": "Brightwave's transcoding and storage costs are growing faster than content volume due to lack of a storage lifecycle policy (everything kept in hot tier). Proposed fix: automated tiering policy for cold archive content. There's also organic internal demand for AI-based video indexing/tagging, which doubles as a monetization opportunity. Plan: bundle the cost-saving tiering proposal with an AI video indexing pilot for an easier internal sell.",
+    "sentiment": "very positive",
+    "actionItems": [
+      "Design Azure Media Services tiering policy for cold archive content",
+      "Propose AI video indexing pilot for automatic tagging and searchability",
+      "Bundle cost savings and AI pilot into a single proposal for internal buy-in"
+    ],
+    "risks": [
+      "AI video indexing pilot scope could expand without clear success criteria"
+    ]
+  }
+]

@@ -1,0 +1,133 @@
+[
+  {
+    "customerId": "cust-acme-mfg",
+    "name": "Acme Manufacturing",
+    "industry": "Manufacturing",
+    "region": "US-East",
+    "currentCloud": "AWS",
+    "monthlySpendUsd": 85000,
+    "migrationInterest": "Azure",
+    "accountOwner": "Dana Whitfield",
+    "healthScore": 72,
+    "challenges": [
+      "Security approval pending from CISO office",
+      "Data residency requirements for EU manufacturing plants",
+      "Legacy SCADA systems tightly coupled to on-prem AWS Direct Connect"
+    ],
+    "opportunities": [
+      "Azure IoT Hub for factory floor telemetry consolidation",
+      "Reserved Instance savings estimated at 18% over current AWS spend",
+      "Azure Arc for hybrid management of edge manufacturing sites"
+    ],
+    "tags": ["migration-candidate", "iot", "manufacturing"]
+  },
+  {
+    "customerId": "cust-northwind-retail",
+    "name": "Northwind Retail Group",
+    "industry": "Retail",
+    "region": "US-West",
+    "currentCloud": "Azure",
+    "monthlySpendUsd": 142000,
+    "migrationInterest": "Cloud Optimization",
+    "accountOwner": "Marcus Chen",
+    "healthScore": 88,
+    "challenges": [
+      "Seasonal traffic spikes causing overprovisioned baseline capacity",
+      "Fragmented Kubernetes clusters across regions",
+      "No unified FinOps tagging strategy"
+    ],
+    "opportunities": [
+      "Azure Savings Plan consolidation across 6 subscriptions",
+      "Autoscaling redesign ahead of Q4 holiday peak",
+      "AKS cluster consolidation to reduce control-plane overhead"
+    ],
+    "tags": ["finops", "optimization", "retail"]
+  },
+  {
+    "customerId": "cust-heliocare-health",
+    "name": "HelioCare Health Systems",
+    "industry": "Healthcare",
+    "region": "US-Central",
+    "currentCloud": "On-Premises",
+    "monthlySpendUsd": 60000,
+    "migrationInterest": "Azure",
+    "accountOwner": "Priya Nair",
+    "healthScore": 65,
+    "challenges": [
+      "HIPAA compliance review required before any patient data workload moves",
+      "Executive sponsor recently changed, restarting stakeholder alignment",
+      "Limited internal cloud engineering headcount"
+    ],
+    "opportunities": [
+      "Azure Health Data Services for FHIR-compliant patient records",
+      "Managed landing zone reduces need for in-house cloud engineers",
+      "Azure Confidential Computing for sensitive research workloads"
+    ],
+    "tags": ["migration-candidate", "healthcare", "compliance"]
+  },
+  {
+    "customerId": "cust-fintrust-bank",
+    "name": "FinTrust Regional Bank",
+    "industry": "Financial Services",
+    "region": "US-East",
+    "currentCloud": "AWS",
+    "monthlySpendUsd": 210000,
+    "migrationInterest": "Multi-cloud",
+    "accountOwner": "Dana Whitfield",
+    "healthScore": 79,
+    "challenges": [
+      "Regulatory approval required for any workload leaving current AWS region",
+      "Strong internal preference to avoid vendor lock-in",
+      "Complex mainframe integration for core banking system"
+    ],
+    "opportunities": [
+      "Azure ExpressRoute for low-latency multi-cloud connectivity",
+      "Azure Arc-enabled data services for a consistent multi-cloud control plane",
+      "Disaster recovery workload on Azure as a secondary region"
+    ],
+    "tags": ["multi-cloud", "financial-services", "regulated"]
+  },
+  {
+    "customerId": "cust-summit-logistics",
+    "name": "Summit Logistics Co.",
+    "industry": "Logistics",
+    "region": "US-Central",
+    "currentCloud": "GCP",
+    "monthlySpendUsd": 47000,
+    "migrationInterest": "Azure",
+    "accountOwner": "Marcus Chen",
+    "healthScore": 54,
+    "challenges": [
+      "Cost overruns on GCP BigQuery analytics workloads",
+      "Route optimization models require GPU capacity not currently budgeted",
+      "Contract renewal with GCP is 4 months away, creating urgency"
+    ],
+    "opportunities": [
+      "Azure Synapse Analytics migration path for BigQuery workloads",
+      "Azure Machine Learning GPU clusters for route optimization",
+      "Bundled discount available if migration signed before GCP renewal"
+    ],
+    "tags": ["migration-candidate", "logistics", "at-risk"]
+  },
+  {
+    "customerId": "cust-brightwave-media",
+    "name": "Brightwave Media",
+    "industry": "Media & Entertainment",
+    "region": "US-West",
+    "currentCloud": "Azure",
+    "monthlySpendUsd": 96000,
+    "migrationInterest": "Cloud Optimization",
+    "accountOwner": "Priya Nair",
+    "healthScore": 91,
+    "challenges": [
+      "Video transcoding pipeline costs growing faster than revenue",
+      "Storage sprawl across cold and hot tiers not well managed"
+    ],
+    "opportunities": [
+      "Azure Media Services tiering policy for cold archive content",
+      "AI-based video indexing to unlock new content monetization",
+      "Reserved capacity for predictable transcoding workloads"
+    ],
+    "tags": ["optimization", "media", "ai-adoption"]
+  }
+]

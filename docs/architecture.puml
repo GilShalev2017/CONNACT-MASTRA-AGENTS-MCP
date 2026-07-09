@@ -1,0 +1,78 @@
+@startuml architecture
+title AI Cloud Partnership Intelligence Platform - System Architecture
+
+actor "Account / Partnership\nTeam Member" as User
+
+skinparam componentStyle rectangle
+skinparam backgroundColor #0f172a
+skinparam defaultFontColor #e2e8f0
+skinparam component {
+  BackgroundColor #1e293b
+  BorderColor #3757f0
+  FontColor #e2e8f0
+}
+skinparam database {
+  BackgroundColor #1e293b
+  BorderColor #f59e0b
+  FontColor #e2e8f0
+}
+skinparam actor {
+  BackgroundColor #1e293b
+  BorderColor #e2e8f0
+}
+
+component "React Frontend\n(Chat, Document Upload,\nAgent Activity View)" as React
+
+package "NestJS Backend" {
+  component "AgentsController\n/api/chat" as ChatCtrl
+  component "DocumentController\n/api/documents" as DocCtrl
+  component "CustomerController\n/api/customers" as CustCtrl
+  component "TranscriptionController\n/api/transcripts" as TransCtrl
+  component "WorkflowsController\n/api/workflows" as WfCtrl
+
+  component "MastraService\n(CloudPartnershipAgent,\nMeetingAnalysisAgent,\nExecutiveBriefingAgent)" as Mastra
+  component "DocumentService\n(ingestion pipeline)" as DocService
+  component "VectorService +\nEmbeddingService" as VectorSvc
+  component "McpClientService" as McpClient
+  component "CustomerService" as CustService
+}
+
+component "CRM MCP Server\n(crm-mcp-server)\nMCP tools:\ngetCustomer, getCustomerHistory,\ngetMigrationOpportunities,\ngetCustomerCloudUsage, listCustomers" as CrmMcp
+
+database "Qdrant\nVector Database" as Qdrant
+database "MongoDB\n(customers, meetings,\ndocument metadata)" as Mongo
+
+User --> React : asks questions,\nuploads documents
+React --> ChatCtrl : POST /api/chat
+React --> DocCtrl : POST /api/documents/upload
+React --> CustCtrl : GET /api/customers
+React --> TransCtrl : GET/POST /api/transcripts
+React --> WfCtrl : POST /api/workflows/executive-briefing
+
+ChatCtrl --> Mastra
+WfCtrl --> Mastra
+TransCtrl --> Mastra
+DocCtrl --> DocService
+CustCtrl --> CustService
+
+Mastra --> VectorSvc : RAG tool\n(searchKnowledgeBase)
+Mastra --> McpClient : CRM tools\n(getCustomer, etc.)
+DocService --> VectorSvc : embed + upsert chunks
+TransCtrl --> VectorSvc : index transcripts
+
+VectorSvc --> Qdrant : semantic search /\nupsert embeddings
+McpClient --> CrmMcp : MCP protocol\n(Streamable HTTP)
+CrmMcp --> Mongo : reads/writes\ncustomers, meetings
+
+CustService --> Mongo : read-only browsing\n(UI only, agent never\ntouches Mongo directly)
+DocService --> Mongo : document metadata
+
+note right of Mastra
+  The agent never accesses MongoDB
+  or Qdrant directly in application
+  code - it only calls typed tools.
+  RAG and MCP are the two capability
+  boundaries the agent operates through.
+end note
+
+@enduml

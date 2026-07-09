@@ -1,0 +1,81 @@
+@startuml mcp-flow
+title MCP Architecture: Agent -> MCP Client -> CRM MCP Server -> MongoDB
+
+skinparam backgroundColor #0f172a
+skinparam defaultFontColor #e2e8f0
+skinparam component {
+  BackgroundColor #1e293b
+  BorderColor #3757f0
+  FontColor #e2e8f0
+}
+skinparam database {
+  BackgroundColor #1e293b
+  BorderColor #f59e0b
+  FontColor #e2e8f0
+}
+
+component "Mastra Agent\n(CloudPartnershipAgent)" as Agent
+
+package "Mastra CRM Tools (agents/tools/crm.tools.ts)" {
+  component "getCustomer" as T1
+  component "getCustomerHistory" as T2
+  component "getMigrationOpportunities" as T3
+  component "getCustomerCloudUsage" as T4
+  component "listCustomers" as T5
+}
+
+component "McpClientService\n(NestJS, MCP SDK Client)" as Client
+component "StreamableHTTPClientTransport" as ClientTransport
+
+cloud "MCP Protocol\n(JSON-RPC over\nStreamable HTTP)" as Protocol
+
+component "crm-mcp-server\n(standalone Node process)" as Server
+component "StreamableHTTPServerTransport" as ServerTransport
+component "McpServer\n(tool registrations)" as McpServerCore
+
+database "MongoDB\n(customers, meetings)" as Mongo
+
+Agent --> T1
+Agent --> T2
+Agent --> T3
+Agent --> T4
+Agent --> T5
+
+T1 --> Client : callTool("getCustomer", args)
+T2 --> Client
+T3 --> Client
+T4 --> Client
+T5 --> Client
+
+Client --> ClientTransport
+ClientTransport --> Protocol
+Protocol --> ServerTransport
+ServerTransport --> McpServerCore
+McpServerCore --> Server : execute tool handler
+
+Server --> Mongo : typed MongoDB queries\n(business logic layer)
+Mongo --> Server : documents
+Server --> McpServerCore : JSON result
+McpServerCore --> ServerTransport
+ServerTransport --> Protocol
+Protocol --> ClientTransport
+ClientTransport --> Client
+Client --> T1 : parsed JSON result
+
+note bottom of Server
+  In production this process would call
+  Salesforce, HubSpot, or an internal
+  customer API instead of MongoDB - the
+  Mastra agent's tool contract would not
+  need to change at all.
+end note
+
+note top of Agent
+  The agent never imports a MongoDB
+  driver or CRM SDK. MCP is the only
+  path from "agent decided it needs
+  business data" to "business system
+  returns typed data".
+end note
+
+@enduml

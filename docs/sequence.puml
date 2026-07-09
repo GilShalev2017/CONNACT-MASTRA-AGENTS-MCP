@@ -1,0 +1,59 @@
+@startuml sequence
+title "Which customers should we prioritize for Azure migration?" - End-to-End Sequence
+
+skinparam backgroundColor #0f172a
+skinparam defaultFontColor #e2e8f0
+skinparam sequence {
+  ActorBackgroundColor #1e293b
+  ParticipantBackgroundColor #1e293b
+  ParticipantBorderColor #3757f0
+  LifeLineBorderColor #475569
+  ArrowColor #94a3b8
+}
+
+actor User
+participant "React\nChat UI" as React
+participant "NestJS\nAgentsController" as Controller
+participant "MastraService" as Mastra
+participant "CloudPartnershipAgent\n(Mastra Agent)" as Agent
+participant "LLM\n(Claude via Anthropic)" as LLM
+participant "searchKnowledgeBase\ntool" as RagTool
+participant "Qdrant" as Qdrant
+participant "getMigrationOpportunities\ntool" as CrmTool
+participant "McpClientService" as McpClient
+participant "CRM MCP Server" as McpServer
+database "MongoDB" as Mongo
+
+User -> React : types question
+React -> Controller : POST /api/chat\n{ message }
+Controller -> Mastra : chat(message)
+Mastra -> Agent : generate(message, { maxSteps: 5 })
+Agent -> LLM : prompt + tool definitions
+
+LLM -> Agent : tool_call: getMigrationOpportunities
+Agent -> CrmTool : execute()
+CrmTool -> McpClient : callTool("getMigrationOpportunities")
+McpClient -> McpServer : MCP JSON-RPC over\nStreamable HTTP
+McpServer -> Mongo : query customers\n(tags: migration-candidate, at-risk)
+Mongo --> McpServer : customer records
+McpServer --> McpClient : tool result (JSON)
+McpClient --> CrmTool : parsed result
+CrmTool --> Agent : opportunities[]
+
+LLM -> Agent : tool_call: searchKnowledgeBase\n("Azure migration prioritization")
+Agent -> RagTool : execute()
+RagTool -> Qdrant : embed query -> vector search
+Qdrant --> RagTool : ranked chunks + metadata
+RagTool --> Agent : results[]
+
+Agent -> LLM : tool results appended to context
+LLM --> Agent : final grounded answer text
+
+Agent --> Mastra : GenerateTextResult\n(text, toolCalls, toolResults)
+Mastra -> Mastra : reshape into ChatResponse\n(answer, sources, toolCalls, steps)
+Mastra --> Controller : ChatResponse
+Controller --> React : 200 OK { answer, sources,\ntoolCalls, steps }
+React -> React : render answer +\nAgent Activity View
+React --> User : displays grounded answer\nwith cited sources & tool trace
+
+@enduml

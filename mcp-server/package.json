@@ -1,0 +1,26 @@
+{
+  "name": "crm-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server exposing CRM/customer business capabilities to AI agents. Simulates an enterprise CRM integration (e.g. Salesforce/HubSpot) backed by MongoDB.",
+  "private": true,
+  "type": "module",
+  "main": "dist/server.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server.js",
+    "dev": "tsx watch src/server.ts",
+    "seed": "tsx src/seed.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.13.0",
+    "express": "^4.21.2",
+    "mongodb": "^6.11.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.10.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
+}
