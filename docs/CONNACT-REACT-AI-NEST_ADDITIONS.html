@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CONNACT-REACT-AI-NEST ADDITIONS</title>
+  <style>
+  @import url("https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.9.0-alpha2/katex.min.css");
+
+  body {
+    font-family: Georgia, Cambria, serif;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #373D49;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: "Source Sans Pro", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: 600;
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+  }
+  h1 { font-size: 2em; }
+  h2 { font-size: 1.5em; }
+  h3 { font-size: 1.25em; }
+  a { color: #35D7BB; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code {
+    font-family: "Ubuntu Mono", Monaco, monospace;
+    background: #F5F7FA;
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+  }
+  pre {
+    background: #F5F7FA;
+    padding: 1em;
+    border-radius: 3px;
+    overflow-x: auto;
+  }
+  .hljs {
+    display: block;
+    overflow-x: auto;
+    padding: 0;
+    color: #333;
+  }
+  pre code { background: none; padding: 0; }
+  blockquote {
+    border-left: 3px solid #A0AABF;
+    padding-left: 1em;
+    margin-left: 0;
+    font-style: italic;
+    color: #666;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+  th, td {
+    border: 1px solid #E8E8E8;
+    padding: 0.5em;
+    text-align: left;
+  }
+  th {
+    background: #F5F7FA;
+    font-weight: 600;
+  }
+  #preview .table {
+    width: auto;
+  }
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+  .katex-display {
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+</style>
+</head>
+<body id="preview">
+<h1 class="code-line has-line-data" data-line-start="0" data-line-end="1"><a id="Understanding_React_useMutation_0"></a>Understanding React <code>useMutation</code></h1>
+<p class="has-line-data" data-line-start="2" data-line-end="3">The <code>useMutation</code> hook is a powerful feature in <strong><a href="https://tanstack.com">TanStack Query (formerly React Query)</a></strong> designed to <strong>create, update, or delete data</strong> on a server.</p>
+<p class="has-line-data" data-line-start="4" data-line-end="5">Unlike <code>useQuery</code>, which automatically fetches data when a component mounts, <code>useMutation</code> is <strong>imperative</strong>. It only executes when explicitly triggered by user interactions, such as form submissions or button clicks.</p>
+<hr>
+<h3 class="code-line has-line-data" data-line-start="8" data-line-end="9"><a id="Key_Capabilities_8"></a>🛠️ Key Capabilities</h3>
+<ul>
+<li class="has-line-data" data-line-start="10" data-line-end="11"><strong>Tracks State</strong>: Provides real-time flags like <code>isPending</code>, <code>isError</code>, and <code>isSuccess</code> to manage UI loading indicators.</li>
+<li class="has-line-data" data-line-start="11" data-line-end="12"><strong>Lifecycle Hooks</strong>: Offers built-in callbacks (<code>onSuccess</code>, <code>onError</code>, <code>onSettled</code>) to execute side effects after an API action.</li>
+<li class="has-line-data" data-line-start="12" data-line-end="13"><strong>Cache Invalidation</strong>: Automatically forces your application to refetch fresh data after a backend database change.</li>
+<li class="has-line-data" data-line-start="13" data-line-end="15"><strong>Optimistic Updates</strong>: Visually updates the client UI immediately before the server response returns, making the app feel instantaneous.</li>
+</ul>
+<hr>
+<h3 class="code-line has-line-data" data-line-start="17" data-line-end="18"><a id="Standard_Code_Example_17"></a>💻 Standard Code Example</h3>
+<p class="has-line-data" data-line-start="19" data-line-end="20">The code snippet below shows how to configure and trigger a POST request using <code>useMutation</code> to add an item to a database:</p>
+<pre><code class="has-line-data language-javascript" data-line-start="22" data-line-end="63"><span class="hljs-keyword">import</span> { useMutation, useQueryClient } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@tanstack/react-query&#x27;</span>;
+<span class="hljs-keyword">import</span> axios <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;axios&#x27;</span>;
+
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">AddTodoForm</span>(<span class="hljs-params"></span>) {
+  <span class="hljs-keyword">const</span> queryClient = <span class="hljs-title function_">useQueryClient</span>();
+
+  <span class="hljs-comment">// 1. Define the mutation configuration</span>
+  <span class="hljs-keyword">const</span> mutation = <span class="hljs-title function_">useMutation</span>({
+    <span class="hljs-attr">mutationFn</span>: <span class="hljs-function">(<span class="hljs-params">newTodo</span>) =&gt;</span> {
+      <span class="hljs-keyword">return</span> axios.<span class="hljs-title function_">post</span>(<span class="hljs-string">&#x27;/api/todos&#x27;</span>, newTodo); <span class="hljs-comment">// Core async network request</span>
+    },
+    <span class="hljs-attr">onSuccess</span>: <span class="hljs-function">() =&gt;</span> {
+      <span class="hljs-comment">// 2. Invalidate cache to trigger an automatic re-fetch of the updated list</span>
+      queryClient.<span class="hljs-title function_">invalidateQueries</span>({ <span class="hljs-attr">queryKey</span>: [<span class="hljs-string">&#x27;todos&#x27;</span>] });
+    },
+    <span class="hljs-attr">onError</span>: <span class="hljs-function">(<span class="hljs-params">error</span>) =&gt;</span> {
+      <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">&#x27;Failed to save data:&#x27;</span>, error);
+    }
+  });
+
+  <span class="hljs-keyword">const</span> <span class="hljs-title function_">handleSubmit</span> = (<span class="hljs-params">event</span>) =&gt; {
+    event.<span class="hljs-title function_">preventDefault</span>();
+    <span class="hljs-comment">// 3. Manually trigger the execution using the .mutate() function</span>
+    mutation.<span class="hljs-title function_">mutate</span>({ <span class="hljs-attr">title</span>: <span class="hljs-string">&#x27;Learn TanStack Query&#x27;</span> });
+  };
+
+  <span class="hljs-keyword">return</span> (
+    <span class="language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">form</span> <span class="hljs-attr">onSubmit</span>=<span class="hljs-string">{handleSubmit}</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;submit&quot;</span> <span class="hljs-attr">disabled</span>=<span class="hljs-string">{mutation.isPending}</span>&gt;</span>
+        {mutation.isPending ? &#x27;Saving...&#x27; : &#x27;Add Todo&#x27;}
+      <span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+      
+      {mutation.isError &amp;&amp; (
+        <span class="hljs-tag">&lt;<span class="hljs-name">p</span> <span class="hljs-attr">style</span>=<span class="hljs-string">{{</span> <span class="hljs-attr">color:</span> &#x27;<span class="hljs-attr">red</span>&#x27; }}&gt;</span>
+          An error occurred: {mutation.error.message}
+        <span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+      )}
+    <span class="hljs-tag">&lt;/<span class="hljs-name">form</span>&gt;</span></span>
+  );
+}
+</code></pre>
+<hr>
+<h3 class="code-line has-line-data" data-line-start="66" data-line-end="67"><a id="Difference_Between_useQuery_and_useMutation_66"></a>🔄 Difference Between useQuery and useMutation</h3>
+<table class="table table-striped table-bordered">
+<thead>
+<tr>
+<th style="text-align:left">Feature</th>
+<th style="text-align:left"><code>useQuery</code></th>
+<th style="text-align:left"><code>useMutation</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>Primary Purpose</strong></td>
+<td style="text-align:left">Fetching and reading data (GET)</td>
+<td style="text-align:left">Modifying data (POST, PUT, DELETE)</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Execution</strong></td>
+<td style="text-align:left">Declarative (runs automatically on mount)</td>
+<td style="text-align:left">Imperative (triggered manually via code)</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Caching</strong></td>
+<td style="text-align:left">Caches returned server responses</td>
+<td style="text-align:left">Does not cache responses by default</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 class="code-line has-line-data" data-line-start="76" data-line-end="77"><a id="Developer_Tip_76"></a>💡 Developer Tip</h3>
+<blockquote>
+<p class="has-line-data" data-line-start="78" data-line-end="79">“You still write the same API request code (<code>fetch()</code>, <code>axios.post()</code>, etc.), but React Query handles everything around it like loading states, error tracking, retries, and cache syncing so you don’t have to manage multiple <code>useState</code> hooks.”</p>
+</blockquote>
+<h1 class="code-line has-line-data" data-line-start="82" data-line-end="83"><a id="Understanding_an_LLMs_Agentic_Loop_82"></a>Understanding an LLM’s Agentic Loop</h1>
+<p class="has-line-data" data-line-start="83" data-line-end="84">An LLM’s <strong>agentic loop</strong> is a cyclical workflow where an AI model autonomously <strong>perceives an environment, plans actions, executes tools, and evaluates outcomes</strong> to achieve a specific goal without human intervention.</p>
+<p class="has-line-data" data-line-start="85" data-line-end="88">Unlike standard chat interactions which use a single “prompt-and-response” delivery, an agentic loop runs continuously in a multi-step sequence until it satisfies a defined stopping condition.<br>
+—### 🛠️ The 4 Phases of the Loop<br>
+The cycle generally follows the <strong>Reasoning, Acting, and Observing (ReAct)</strong> pattern, processing the following phases in a continuous circle:</p>
+<p class="has-line-data" data-line-start="90" data-line-end="106">┌──────────────────────────────┐<br>
+│ 1. PLAN │◄──────────────┐<br>
+│ (Breaks goal into steps) │ │<br>
+└──────────────┬───────────────┘ │<br>
+│ │<br>
+▼ │<br>
+┌──────────────────────────────┐ │<br>
+│ 2. ACT │ │ 4. REFLECT<br>
+│ (Selects &amp; calls a tool) │ │ (Evaluates status)<br>
+└──────────────┬───────────────┘ │<br>
+│ │<br>
+▼ │<br>
+┌──────────────────────────────┐ │<br>
+│ 3. OBSERVE │ │<br>
+│ (Ingests external output) │───────────────┘<br>
+└──────────────────────────────┘</p>
+<ol>
+<li class="has-line-data" data-line-start="108" data-line-end="109"><strong>Plan</strong>: The LLM analyzes the core objective, reviews its current history, and breaks down the next logical step needed.</li>
+<li class="has-line-data" data-line-start="109" data-line-end="110"><strong>Act</strong>: The model generates a structured command to execute a specific task, such as a database query, file modification, or a web search.</li>
+<li class="has-line-data" data-line-start="110" data-line-end="111"><strong>Observe</strong>: The runtime environment executes the tool and passes the raw result back into the prompt context window of the LLM.</li>
+<li class="has-line-data" data-line-start="111" data-line-end="113"><strong>Reflect</strong>: The LLM reviews the tool output against its original goal to decide if the task is complete or if it needs to adjust its strategy and restart the loop.</li>
+</ol>
+<hr>
+<h3 class="code-line has-line-data" data-line-start="115" data-line-end="116"><a id="Standard_Code_Example_115"></a>💻 Standard Code Example</h3>
+<p class="has-line-data" data-line-start="117" data-line-end="118">The code snippet below shows a basic structural runtime loop built in Python to demonstrate how an agent processes multiple steps autonomously:</p>
+<pre><code class="has-line-data language-python" data-line-start="120" data-line-end="154"><span class="hljs-keyword">class</span> <span class="hljs-title class_">AgenticLoop</span>:
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init__</span>(<span class="hljs-params">self, llm, tools</span>):
+        <span class="hljs-variable language_">self</span>.llm = llm
+        <span class="hljs-variable language_">self</span>.tools = tools
+        <span class="hljs-variable language_">self</span>.history = []
+
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">run</span>(<span class="hljs-params">self, user_goal</span>):
+        <span class="hljs-variable language_">self</span>.history.append({<span class="hljs-string">&quot;role&quot;</span>: <span class="hljs-string">&quot;user&quot;</span>, <span class="hljs-string">&quot;content&quot;</span>: user_goal})
+        max_iterations = <span class="hljs-number">10</span>
+        
+        <span class="hljs-keyword">for</span> iteration <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(max_iterations):
+            <span class="hljs-comment"># 1. PLAN &amp; SELECT ACTION</span>
+            <span class="hljs-comment"># The LLM is prompted to output either: &quot;TOOL: name(args)&quot; or &quot;FINAL_ANSWER: text&quot;</span>
+            response = <span class="hljs-variable language_">self</span>.llm.generate(<span class="hljs-variable language_">self</span>.history)
+            <span class="hljs-variable language_">self</span>.history.append({<span class="hljs-string">&quot;role&quot;</span>: <span class="hljs-string">&quot;assistant&quot;</span>, <span class="hljs-string">&quot;content&quot;</span>: response})
+            
+            <span class="hljs-keyword">if</span> <span class="hljs-string">&quot;FINAL_ANSWER:&quot;</span> <span class="hljs-keyword">in</span> response:
+                <span class="hljs-keyword">return</span> response.split(<span class="hljs-string">&quot;FINAL_ANSWER:&quot;</span>).strip()
+                
+            <span class="hljs-keyword">if</span> <span class="hljs-string">&quot;TOOL:&quot;</span> <span class="hljs-keyword">in</span> response:
+                <span class="hljs-comment"># 2. ACT (Parse tool call details)</span>
+                tool_name, tool_args = <span class="hljs-variable language_">self</span>.parse_tool_call(response)
+                
+                <span class="hljs-comment"># 3. OBSERVE (Execute tool and capture results)</span>
+                observation = <span class="hljs-variable language_">self</span>.tools[tool_name].execute(tool_args)
+                
+                <span class="hljs-comment"># 4. REFLECT (Feed observation back to the LLM for the next cycle)</span>
+                <span class="hljs-variable language_">self</span>.history.append({
+                    <span class="hljs-string">&quot;role&quot;</span>: <span class="hljs-string">&quot;environment&quot;</span>, 
+                    <span class="hljs-string">&quot;content&quot;</span>: <span class="hljs-string">f&quot;Observation from <span class="hljs-subst">{tool_name}</span>: <span class="hljs-subst">{observation}</span>&quot;</span>
+                })
+                
+        <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;Loop terminated: Reached maximum safety iterations without an answer.&quot;</span>
+</code></pre>
+<hr>
+<h3 class="code-line has-line-data" data-line-start="157" data-line-end="158"><a id="Difference_Between_Standard_LLMs_and_Agentic_Loops_157"></a>🔄 Difference Between Standard LLMs and Agentic Loops</h3>
+<table class="table table-striped table-bordered">
+<thead>
+<tr>
+<th style="text-align:left">Feature</th>
+<th style="text-align:left">Standard LLM Call</th>
+<th style="text-align:left">Agentic Loop</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>Execution Style</strong></td>
+<td style="text-align:left">Single turn (One prompt = One response)</td>
+<td style="text-align:left">Multi-turn (Autonomous iterations)</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Capability</strong></td>
+<td style="text-align:left">Static reasoning based on static weights</td>
+<td style="text-align:left">Dynamic problem solving via live tool feedback</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Error Correction</strong></td>
+<td style="text-align:left">Fails immediately if wrong assumptions are made</td>
+<td style="text-align:left">Corrects course automatically upon seeing tool errors</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Human Input</strong></td>
+<td style="text-align:left">Required after every single assistant generation</td>
+<td style="text-align:left">Only required to kick off the goal and view final output</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 class="code-line has-line-data" data-line-start="168" data-line-end="169"><a id="Key_Design_Architectures_168"></a>💡 Key Design Architectures</h3>
+<ul>
+<li class="has-line-data" data-line-start="170" data-line-end="171"><strong>ReAct (Reason + Act)</strong>: The model explicitly writes down its internal “Thought”, executes an “Action”, and receives an “Observation” before writing the next thought.</li>
+<li class="has-line-data" data-line-start="171" data-line-end="172"><strong>Reflection / Self-Correction</strong>: The agent evaluates its own intermediate draft work against strict validation criteria before passing it forward.</li>
+<li class="has-line-data" data-line-start="172" data-line-end="174"><strong>Plan-and-Solve</strong>: The LLM maps out a full macro-level trajectory of sub-tasks upfront, executing each one sequentially inside the micro-loop.</li>
+</ul>
+<hr>
+<p class="has-line-data" data-line-start="175" data-line-end="176">If you would like to expand this Markdown file before exporting it through Dillinger, let me know if you want to include real-world framework examples (like LangGraph or CrewAI) or a sample system prompt template that forces an LLM into this loop!</p>
+<h1 class="code-line has-line-data" data-line-start="178" data-line-end="179"><a id="Agentic_Loop_Analysis_CONNACTMASTRAAGENTSMCP_178"></a>Agentic Loop Analysis — CONNACT-MASTRA-AGENTS-MCP</h1>
+<h2 class="code-line has-line-data" data-line-start="180" data-line-end="181"><a id="Short_answer_180"></a>Short answer</h2>
+<p class="has-line-data" data-line-start="182" data-line-end="183"><strong>Yes.</strong> The solution implements one true agentic loop, using Mastra’s built-in <code>maxSteps</code> tool-calling mechanism on the <code>CloudPartnershipAgent</code>. Everything else in the codebase is either a one-shot LLM call or a deterministic, linear pipeline.</p>
+<hr>
+<h2 class="code-line has-line-data" data-line-start="186" data-line-end="187"><a id="The_agentic_loop_186"></a>The agentic loop</h2>
+<p class="has-line-data" data-line-start="188" data-line-end="189"><strong>Core call site:</strong> <code>mastra.service.ts:118</code></p>
+<p class="has-line-data" data-line-start="190" data-line-end="193">​<code>ts const result = await this.cloudPartnershipAgent.generate(message, { maxSteps: 5 }); ​</code></p>
+<p class="has-line-data" data-line-start="194" data-line-end="195">This single call triggers Mastra’s internal <strong>observe → decide → act → observe</strong> cycle:</p>
+<ol>
+<li class="has-line-data" data-line-start="196" data-line-end="197">The LLM is called with the user message and available tools.</li>
+<li class="has-line-data" data-line-start="197" data-line-end="198">If it emits tool calls, those tools execute.</li>
+<li class="has-line-data" data-line-start="198" data-line-end="199">Tool results are appended back into the message/context.</li>
+<li class="has-line-data" data-line-start="199" data-line-end="200">The LLM is called again with the updated context.</li>
+<li class="has-line-data" data-line-start="200" data-line-end="202">Steps 2–4 repeat until the model returns a final, non-tool-call answer — or the loop hits its <strong>hard cap of 5 steps</strong>.</li>
+</ol>
+<h3 class="code-line has-line-data" data-line-start="202" data-line-end="203"><a id="What_the_loop_iterates_over_202"></a>What the loop iterates over</h3>
+<table class="table table-striped table-bordered">
+<thead>
+<tr>
+<th>Component</th>
+<th>Location</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Agent definition &amp; tool wiring</td>
+<td><code>mastra.service.ts:71-76</code></td>
+<td><code>CloudPartnershipAgent</code> is constructed with <code>tools: { searchKnowledgeBase, ...crmTools }</code></td>
+</tr>
+<tr>
+<td>CRM tools</td>
+<td><code>crm.tools.ts:11-48</code></td>
+<td>Defines <code>getCustomer</code>, <code>getCustomerHistory</code>, <code>getMigrationOpportunities</code>, <code>getCustomerCloudUsage</code>, <code>listCustomers</code> via <code>createTool</code></td>
+</tr>
+<tr>
+<td>MCP invocation (“act”/“observe”)</td>
+<td><code>mcp-client.service.ts:65-76</code></td>
+<td><code>client.callTool(...)</code> — the actual MCP call each tool’s <code>execute</code> delegates to</td>
+</tr>
+<tr>
+<td>Post-loop trace read</td>
+<td><code>mastra.service.ts:123-157</code></td>
+<td>Reads <code>result.toolResults</code> purely to build a UI-facing activity log — no additional looping occurs here</td>
+</tr>
+</tbody>
+</table>
+<p class="has-line-data" data-line-start="211" data-line-end="212">Within its 5-step budget, the agent can chain multiple tool calls, e.g.:</p>
+<p class="has-line-data" data-line-start="213" data-line-end="216">​<code> listCustomers → getCustomer → searchKnowledgeBase → (final answer) ​</code></p>
+<hr>
+<h2 class="code-line has-line-data" data-line-start="219" data-line-end="220"><a id="What_is_not_a_loop_for_contrast_219"></a>What is <em>not</em> a loop (for contrast)</h2>
+<ul>
+<li class="has-line-data" data-line-start="221" data-line-end="222">
+<p class="has-line-data" data-line-start="221" data-line-end="222"><strong><code>meetingAnalysisAgent</code></strong> (<code>mastra.service.ts:198</code>) and <strong><code>executiveBriefingAgent</code></strong> (<code>mastra.service.ts:84-88</code>) call <code>.generate()</code> with <strong>no <code>maxSteps</code> and no tools</strong> — one-shot, structured-output calls.</p>
+</li>
+<li class="has-line-data" data-line-start="222" data-line-end="234">
+<p class="has-line-data" data-line-start="222" data-line-end="223"><strong><code>executive-briefing.workflow.ts:106-114</code></strong> builds a fixed, linear Mastra <code>Workflow</code>:</p>
+<p class="has-line-data" data-line-start="224" data-line-end="231">​<code>ts createWorkflow()   .then(gatherCrmContext)   .then(gatherKnowledgeContext)   .then(synthesizeBriefing)   .commit(); ​</code></p>
+<p class="has-line-data" data-line-start="232" data-line-end="233">This is a deterministic 3-step pipeline, not an iterative/conditional agent loop.</p>
+</li>
+</ul>
+<hr>
+<h2 class="code-line has-line-data" data-line-start="236" data-line-end="237"><a id="Summary_236"></a>Summary</h2>
+<table class="table table-striped table-bordered">
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Mechanism</td>
+<td>Mastra <code>Agent.generate(message, { maxSteps: 5 })</code></td>
+</tr>
+<tr>
+<td>Location</td>
+<td><code>backend/src/modules/agents/mastra.service.ts:118</code></td>
+</tr>
+<tr>
+<td>Agent</td>
+<td><code>CloudPartnershipAgent</code></td>
+</tr>
+<tr>
+<td>Tools available</td>
+<td>RAG (<code>searchKnowledgeBase</code>) + 5 CRM tools, delegating to MCP</td>
+</tr>
+<tr>
+<td>Stopping condition</td>
+<td>Model returns final non-tool-call response <strong>or</strong> 5-step cap reached</td>
+</tr>
+<tr>
+<td>Other agents/workflows</td>
+<td>One-shot generation or deterministic linear pipeline — no loop</td>
+</tr>
+</tbody>
+</table>
+
+</body>
+</html>

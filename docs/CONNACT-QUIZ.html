@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CONNACT-QUIZ</title>
+  <style>
+  @import url("https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.9.0-alpha2/katex.min.css");
+
+  body {
+    font-family: Georgia, Cambria, serif;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #373D49;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: "Source Sans Pro", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: 600;
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+  }
+  h1 { font-size: 2em; }
+  h2 { font-size: 1.5em; }
+  h3 { font-size: 1.25em; }
+  a { color: #35D7BB; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code {
+    font-family: "Ubuntu Mono", Monaco, monospace;
+    background: #F5F7FA;
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+  }
+  pre {
+    background: #F5F7FA;
+    padding: 1em;
+    border-radius: 3px;
+    overflow-x: auto;
+  }
+  .hljs {
+    display: block;
+    overflow-x: auto;
+    padding: 0;
+    color: #333;
+  }
+  pre code { background: none; padding: 0; }
+  blockquote {
+    border-left: 3px solid #A0AABF;
+    padding-left: 1em;
+    margin-left: 0;
+    font-style: italic;
+    color: #666;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+  th, td {
+    border: 1px solid #E8E8E8;
+    padding: 0.5em;
+    text-align: left;
+  }
+  th {
+    background: #F5F7FA;
+    font-weight: 600;
+  }
+  #preview .table {
+    width: auto;
+  }
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+  .katex-display {
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+</style>
+</head>
+<body id="preview">
+<hr>
+<h2 class="code-line has-line-data" data-line-start="1" data-line-end="3"><a id="title_Exam_CONNACTMASTRAAGENTSMCP_Solution_Design_AI_Agent_Theory_1"></a>title: “Exam: CONNACT-MASTRA-AGENTS-MCP — Solution Design &amp; AI Agent Theory”</h2>
+<h1 class="code-line has-line-data" data-line-start="4" data-line-end="5"><a id="Exam_Agentic_Solution_Design_AI_Theory_4"></a>Exam: Agentic Solution Design &amp; AI Theory</h1>
+<p class="has-line-data" data-line-start="6" data-line-end="7"><strong>Instructions:</strong> Each question is multiple choice with one correct answer unless marked otherwise. Answers and explanations are provided in the <strong>Answer Key</strong> section at the end of the document. Do not peek ahead!</p>
+<hr>
+<h2 class="code-line has-line-data" data-line-start="10" data-line-end="11"><a id="Section_A_Solution_Design_Implementation_CONNACTMASTRAAGENTSMCP_10"></a>Section A — Solution Design &amp; Implementation (CONNACT-MASTRA-AGENTS-MCP)</h2>
+<p class="has-line-data" data-line-start="12" data-line-end="13"><strong>A1.</strong> Which method call implements the agentic loop for the <code>CloudPartnershipAgent</code>?</p>
+<ul>
+<li class="has-line-data" data-line-start="14" data-line-end="15">A. <code>this.cloudPartnershipAgent.stream(message)</code></li>
+<li class="has-line-data" data-line-start="15" data-line-end="16">B. <code>this.cloudPartnershipAgent.generate(message, { maxSteps: 5 })</code></li>
+<li class="has-line-data" data-line-start="16" data-line-end="17">C. <code>this.cloudPartnershipAgent.run({ steps: 5 })</code></li>
+<li class="has-line-data" data-line-start="17" data-line-end="19">D. <code>this.mcpClient.loop(message, 5)</code></li>
+</ul>
+<p class="has-line-data" data-line-start="19" data-line-end="20"><strong>A2.</strong> What is the maximum number of tool-calling steps the <code>CloudPartnershipAgent</code> can take before it is forced to return a final answer?</p>
+<ul>
+<li class="has-line-data" data-line-start="21" data-line-end="22">A. 1 (single tool call only)</li>
+<li class="has-line-data" data-line-start="22" data-line-end="23">B. 3</li>
+<li class="has-line-data" data-line-start="23" data-line-end="24">C. 5</li>
+<li class="has-line-data" data-line-start="24" data-line-end="26">D. Unlimited — it stops only when the model chooses to</li>
+</ul>
+<p class="has-line-data" data-line-start="26" data-line-end="27"><strong>A3.</strong> Which two categories of tools are wired into the <code>CloudPartnershipAgent</code>?</p>
+<ul>
+<li class="has-line-data" data-line-start="28" data-line-end="29">A. A web-search tool and a code-execution tool</li>
+<li class="has-line-data" data-line-start="29" data-line-end="30">B. A RAG tool (<code>searchKnowledgeBase</code>) and CRM tools (<code>getCustomer</code>, <code>getCustomerHistory</code>, <code>getMigrationOpportunities</code>, <code>getCustomerCloudUsage</code>, <code>listCustomers</code>)</li>
+<li class="has-line-data" data-line-start="30" data-line-end="31">C. A calendar tool and an email-sending tool</li>
+<li class="has-line-data" data-line-start="31" data-line-end="33">D. A SQL query tool and a file-system tool</li>
+</ul>
+<p class="has-line-data" data-line-start="33" data-line-end="34"><strong>A4.</strong> How do the CRM tools actually fetch customer data?</p>
+<ul>
+<li class="has-line-data" data-line-start="35" data-line-end="36">A. Direct MongoDB queries from inside the backend process</li>
+<li class="has-line-data" data-line-start="36" data-line-end="37">B. Direct calls to a third-party CRM’s public REST API</li>
+<li class="has-line-data" data-line-start="37" data-line-end="38">C. By calling a standalone MCP server over HTTP, which itself queries MongoDB</li>
+<li class="has-line-data" data-line-start="38" data-line-end="40">D. By reading static JSON files bundled with the backend</li>
+</ul>
+<p class="has-line-data" data-line-start="40" data-line-end="41"><strong>A5.</strong> What transport does the MCP client/server pair use?</p>
+<ul>
+<li class="has-line-data" data-line-start="42" data-line-end="43">A. stdio (spawned child process)</li>
+<li class="has-line-data" data-line-start="43" data-line-end="44">B. WebSockets</li>
+<li class="has-line-data" data-line-start="44" data-line-end="45">C. Streamable HTTP (<code>StreamableHTTPServerTransport</code> / <code>StreamableHTTPClientTransport</code>), stateless</li>
+<li class="has-line-data" data-line-start="45" data-line-end="47">D. gRPC</li>
+</ul>
+<p class="has-line-data" data-line-start="47" data-line-end="48"><strong>A6.</strong> Which embedding model and vector store power the RAG pipeline?</p>
+<ul>
+<li class="has-line-data" data-line-start="49" data-line-end="50">A. OpenAI <code>text-embedding-3-small</code> + Pinecone</li>
+<li class="has-line-data" data-line-start="50" data-line-end="51">B. Local Transformers.js <code>Xenova/all-MiniLM-L6-v2</code> (384-dim) + Qdrant (<code>connact_knowledge</code> collection, Cosine distance)</li>
+<li class="has-line-data" data-line-start="51" data-line-end="52">C. Cohere embeddings + Weaviate</li>
+<li class="has-line-data" data-line-start="52" data-line-end="54">D. Anthropic embeddings + pgvector</li>
+</ul>
+<p class="has-line-data" data-line-start="54" data-line-end="55"><strong>A7.</strong> How are knowledge-docs chunked before embedding?</p>
+<ul>
+<li class="has-line-data" data-line-start="56" data-line-end="57">A. By Markdown heading (one chunk per <code>##</code> section)</li>
+<li class="has-line-data" data-line-start="57" data-line-end="58">B. By fixed token count using a tokenizer</li>
+<li class="has-line-data" data-line-start="58" data-line-end="59">C. By a sliding word-count window: 180 words per chunk, 30-word overlap</li>
+<li class="has-line-data" data-line-start="59" data-line-end="61">D. Whole-document embeddings, no chunking</li>
+</ul>
+<p class="has-line-data" data-line-start="61" data-line-end="62"><strong>A8.</strong> When does document ingestion into the vector store happen?</p>
+<ul>
+<li class="has-line-data" data-line-start="63" data-line-end="64">A. Via a manually-triggered <code>npm run ingest</code> script</li>
+<li class="has-line-data" data-line-start="64" data-line-end="65">B. On every backend request, re-embedding all documents</li>
+<li class="has-line-data" data-line-start="65" data-line-end="66">C. Automatically in <code>DocumentService.onModuleInit</code>, only if the collection is currently empty</li>
+<li class="has-line-data" data-line-start="66" data-line-end="68">D. It never happens automatically — an admin must upload each file through the UI</li>
+</ul>
+<p class="has-line-data" data-line-start="68" data-line-end="69"><strong>A9.</strong> Which LLM provider/model does the backend use to power the agents?</p>
+<ul>
+<li class="has-line-data" data-line-start="70" data-line-end="71">A. OpenAI GPT-4o via <code>@ai-sdk/openai</code></li>
+<li class="has-line-data" data-line-start="71" data-line-end="72">B. Anthropic, via <code>@ai-sdk/anthropic</code>, model id from <code>ANTHROPIC_MODEL</code> (default <code>claude-sonnet-5</code>)</li>
+<li class="has-line-data" data-line-start="72" data-line-end="73">C. A locally-hosted Llama model via Ollama</li>
+<li class="has-line-data" data-line-start="73" data-line-end="75">D. Google Gemini via Vertex AI</li>
+</ul>
+<p class="has-line-data" data-line-start="75" data-line-end="76"><strong>A10.</strong> How do <code>meetingAnalysisAgent</code> and <code>executiveBriefingAgent</code> differ from <code>CloudPartnershipAgent</code> in terms of agentic behavior?</p>
+<ul>
+<li class="has-line-data" data-line-start="77" data-line-end="78">A. They use a larger <code>maxSteps</code> value for deeper reasoning</li>
+<li class="has-line-data" data-line-start="78" data-line-end="79">B. They call <code>.generate()</code> with no tools and no <code>maxSteps</code> — one-shot structured-output calls, not loops</li>
+<li class="has-line-data" data-line-start="79" data-line-end="80">C. They run entirely on the frontend</li>
+<li class="has-line-data" data-line-start="80" data-line-end="82">D. They use a different LLM provider</li>
+</ul>
+<p class="has-line-data" data-line-start="82" data-line-end="83"><strong>A11.</strong> What implements the <code>executive-briefing</code> feature’s control flow?</p>
+<ul>
+<li class="has-line-data" data-line-start="84" data-line-end="85">A. A second agentic loop with <code>maxSteps: 10</code></li>
+<li class="has-line-data" data-line-start="85" data-line-end="86">B. A fixed, linear Mastra <code>Workflow</code>: <code>gatherCrmContext → gatherKnowledgeContext → synthesizeBriefing</code>, explicitly non-agentic/deterministic</li>
+<li class="has-line-data" data-line-start="86" data-line-end="87">C. A recursive agent-calls-agent pattern</li>
+<li class="has-line-data" data-line-start="87" data-line-end="89">D. A cron job that polls the CRM every hour</li>
+</ul>
+<p class="has-line-data" data-line-start="89" data-line-end="90"><strong>A12.</strong> How does the solution enforce grounding / prevent hallucination in agent outputs?</p>
+<ul>
+<li class="has-line-data" data-line-start="91" data-line-end="92">A. A post-hoc fact-checking model reviews every response before it’s returned</li>
+<li class="has-line-data" data-line-start="92" data-line-end="93">B. Explicit instructions in the agent’s system prompt (e.g., “Never fabricate customer facts… say so plainly instead of guessing”) combined with tool-based retrieval rather than relying on parametric knowledge</li>
+<li class="has-line-data" data-line-start="93" data-line-end="94">C. Output is only ever a fixed template with no free-text generation</li>
+<li class="has-line-data" data-line-start="94" data-line-end="96">D. All numeric claims are automatically footnoted by a separate service</li>
+</ul>
+<p class="has-line-data" data-line-start="96" data-line-end="97"><strong>A13.</strong> How are structured outputs (e.g., meeting analysis, executive briefing) enforced?</p>
+<ul>
+<li class="has-line-data" data-line-start="98" data-line-end="99">A. By asking the model nicely in the prompt to “please respond in JSON”</li>
+<li class="has-line-data" data-line-start="99" data-line-end="100">B. By parsing free-text output with regex after generation</li>
+<li class="has-line-data" data-line-start="100" data-line-end="101">C. Via a Zod schema passed as <code>{ output: schema }</code> into <code>.generate()</code></li>
+<li class="has-line-data" data-line-start="101" data-line-end="103">D. Via a separate LLM call that reformats the first response</li>
+</ul>
+<p class="has-line-data" data-line-start="103" data-line-end="104"><strong>A14.</strong> True or false: The backend persists conversation history and reloads it on each turn using Mastra’s <code>Memory</code> feature.</p>
+<ul>
+<li class="has-line-data" data-line-start="105" data-line-end="106">A. True — every agent call is preceded by a memory lookup</li>
+<li class="has-line-data" data-line-start="106" data-line-end="107">B. False — a <code>conversationId</code> is generated/echoed back, but it is never persisted or used to reload prior turns; each <code>.generate()</code> call is stateless</li>
+<li class="has-line-data" data-line-start="107" data-line-end="108">C. True, but only for the <code>CloudPartnershipAgent</code></li>
+<li class="has-line-data" data-line-start="108" data-line-end="110">D. False — memory is stored in Qdrant alongside document embeddings</li>
+</ul>
+<p class="has-line-data" data-line-start="110" data-line-end="111"><strong>A15.</strong> What authentication/authorization exists on the backend’s chat endpoint?</p>
+<ul>
+<li class="has-line-data" data-line-start="112" data-line-end="113">A. JWT-based auth with per-user rate limiting</li>
+<li class="has-line-data" data-line-start="113" data-line-end="114">B. API-key auth via a NestJS guard</li>
+<li class="has-line-data" data-line-start="114" data-line-end="115">C. None — no guards/middleware were found protecting the endpoint</li>
+<li class="has-line-data" data-line-start="115" data-line-end="117">D. OAuth2 via an external identity provider</li>
+</ul>
+<p class="has-line-data" data-line-start="117" data-line-end="118"><strong>A16.</strong> How does the frontend communicate with the backend agent, and does it stream tokens?</p>
+<ul>
+<li class="has-line-data" data-line-start="119" data-line-end="120">A. WebSocket connection with token-by-token streaming</li>
+<li class="has-line-data" data-line-start="120" data-line-end="121">B. Server-Sent Events (SSE) streaming the agent’s reasoning steps live</li>
+<li class="has-line-data" data-line-start="121" data-line-end="122">C. Plain REST: <code>POST /api/chat</code> with <code>{message, conversationId}</code>, awaiting the full JSON response — no streaming</li>
+<li class="has-line-data" data-line-start="122" data-line-end="124">D. GraphQL subscription</li>
+</ul>
+<hr>
+<h2 class="code-line has-line-data" data-line-start="126" data-line-end="127"><a id="Section_B_AI_Agent_Theory_Agents_Tools_Flows_Agentic_Loops_MCP_Prompts_Grounding_RAG_126"></a>Section B — AI Agent Theory (Agents, Tools, Flows, Agentic Loops, MCP, Prompts, Grounding, RAG)</h2>
+<p class="has-line-data" data-line-start="128" data-line-end="129"><strong>B1.</strong> What best defines an “agentic loop” in the context of LLM-based systems?</p>
+<ul>
+<li class="has-line-data" data-line-start="130" data-line-end="131">A. A single prompt/response exchange with no external actions</li>
+<li class="has-line-data" data-line-start="131" data-line-end="132">B. A repeating cycle of the model reasoning, choosing a tool/action, observing the result, and reasoning again, continuing until a stopping condition (final answer or step limit) is reached</li>
+<li class="has-line-data" data-line-start="132" data-line-end="133">C. A <code>for</code> loop in application code that calls the LLM API multiple times with the same prompt</li>
+<li class="has-line-data" data-line-start="133" data-line-end="135">D. A caching mechanism that reuses previous LLM responses</li>
+</ul>
+<p class="has-line-data" data-line-start="135" data-line-end="136"><strong>B2.</strong> In tool-calling agent frameworks, what is the purpose of a “tool” (a.k.a. “function”) definition?</p>
+<ul>
+<li class="has-line-data" data-line-start="137" data-line-end="138">A. It’s purely cosmetic UI metadata for a chat interface</li>
+<li class="has-line-data" data-line-start="138" data-line-end="139">B. It gives the model a formally-described interface (name, description, input/output schema) so it can request an external action, which the host application executes and returns results for</li>
+<li class="has-line-data" data-line-start="139" data-line-end="140">C. It replaces the need for a system prompt</li>
+<li class="has-line-data" data-line-start="140" data-line-end="142">D. It is only used for logging purposes and never actually executed</li>
+</ul>
+<p class="has-line-data" data-line-start="142" data-line-end="143"><strong>B3.</strong> What is the Model Context Protocol (MCP)?</p>
+<ul>
+<li class="has-line-data" data-line-start="144" data-line-end="145">A. A proprietary Anthropic-only prompt format</li>
+<li class="has-line-data" data-line-start="145" data-line-end="146">B. An open protocol standardizing how AI applications connect to external tools, data sources, and systems via a common client-server interface, independent of any single model provider</li>
+<li class="has-line-data" data-line-start="146" data-line-end="147">C. A database replication protocol</li>
+<li class="has-line-data" data-line-start="147" data-line-end="149">D. A method for compressing conversation context to save tokens</li>
+</ul>
+<p class="has-line-data" data-line-start="149" data-line-end="150"><strong>B4.</strong> In MCP terminology, what is the difference between an MCP “tool” and an MCP “resource”?</p>
+<ul>
+<li class="has-line-data" data-line-start="151" data-line-end="152">A. There is no difference — the terms are interchangeable</li>
+<li class="has-line-data" data-line-start="152" data-line-end="153">B. Tools are model-invoked actions/functions (often with side effects or computation); resources are addressable, typically read-only data/context the client can fetch and expose to the model</li>
+<li class="has-line-data" data-line-start="153" data-line-end="154">C. Resources always cost money to call; tools are always free</li>
+<li class="has-line-data" data-line-start="154" data-line-end="156">D. Tools run on the client; resources run on the server</li>
+</ul>
+<p class="has-line-data" data-line-start="156" data-line-end="157"><strong>B5.</strong> Why might an MCP server use a stateless “Streamable HTTP” transport instead of the stdio transport?</p>
+<ul>
+<li class="has-line-data" data-line-start="158" data-line-end="159">A. Stdio is faster but insecure</li>
+<li class="has-line-data" data-line-start="159" data-line-end="160">B. Streamable HTTP allows a remote, independently-deployable server reachable over the network (e.g., in its own container), whereas stdio requires the server to be a local child process of the client</li>
+<li class="has-line-data" data-line-start="160" data-line-end="161">C. Streamable HTTP is required by the MCP spec; stdio is deprecated</li>
+<li class="has-line-data" data-line-start="161" data-line-end="163">D. There is no meaningful difference in deployment topology</li>
+</ul>
+<p class="has-line-data" data-line-start="163" data-line-end="164"><strong>B6.</strong> What does “grounding” mean in the context of LLM applications?</p>
+<ul>
+<li class="has-line-data" data-line-start="165" data-line-end="166">A. Lowering the model’s temperature to 0</li>
+<li class="has-line-data" data-line-start="166" data-line-end="167">B. Constraining/connecting the model’s output to verifiable external data (retrieved documents, tool results, structured facts) rather than relying solely on the model’s parametric memory, to reduce hallucination</li>
+<li class="has-line-data" data-line-start="167" data-line-end="168">C. Running the model on-premises instead of via API</li>
+<li class="has-line-data" data-line-start="168" data-line-end="170">D. Fine-tuning the model on a company’s data</li>
+</ul>
+<p class="has-line-data" data-line-start="170" data-line-end="171"><strong>B7.</strong> What is Retrieval-Augmented Generation (RAG)?</p>
+<ul>
+<li class="has-line-data" data-line-start="172" data-line-end="173">A. A technique where the model generates multiple candidate answers and votes on the best one</li>
+<li class="has-line-data" data-line-start="173" data-line-end="174">B. A pattern that retrieves relevant external documents/passages (typically via semantic/vector search) and injects them into the prompt context so the model can generate answers grounded in that retrieved content</li>
+<li class="has-line-data" data-line-start="174" data-line-end="175">C. A method of retraining the model weights on new documents every time a query arrives</li>
+<li class="has-line-data" data-line-start="175" data-line-end="177">D. A caching layer that returns a stored answer if the same question was asked before</li>
+</ul>
+<p class="has-line-data" data-line-start="177" data-line-end="178"><strong>B8.</strong> In a typical RAG pipeline, what is the role of an embedding model?</p>
+<ul>
+<li class="has-line-data" data-line-start="179" data-line-end="180">A. It generates the final natural-language answer</li>
+<li class="has-line-data" data-line-start="180" data-line-end="181">B. It converts text (queries and documents) into dense numeric vectors such that semantically similar text ends up close together in vector space, enabling similarity search</li>
+<li class="has-line-data" data-line-start="181" data-line-end="182">C. It compresses documents for storage without regard to meaning</li>
+<li class="has-line-data" data-line-start="182" data-line-end="184">D. It replaces the need for a vector database</li>
+</ul>
+<p class="has-line-data" data-line-start="184" data-line-end="185"><strong>B9.</strong> Why is document “chunking” necessary in RAG systems?</p>
+<ul>
+<li class="has-line-data" data-line-start="186" data-line-end="187">A. It is not necessary; whole documents should always be embedded as-is</li>
+<li class="has-line-data" data-line-start="187" data-line-end="188">B. Long documents exceed practical embedding/context limits and dilute relevance; splitting into smaller, semantically coherent (often overlapping) chunks improves retrieval precision and lets only relevant pieces be injected into the prompt</li>
+<li class="has-line-data" data-line-start="188" data-line-end="189">C. Chunking is only needed for images, not text</li>
+<li class="has-line-data" data-line-start="189" data-line-end="191">D. Chunking is a step that happens after generation, not before</li>
+</ul>
+<p class="has-line-data" data-line-start="191" data-line-end="192"><strong>B10.</strong> What is a common purpose of overlap between consecutive chunks (e.g., a 30-word overlap between 180-word chunks)?</p>
+<ul>
+<li class="has-line-data" data-line-start="193" data-line-end="194">A. To increase storage costs intentionally</li>
+<li class="has-line-data" data-line-start="194" data-line-end="195">B. To avoid splitting a relevant idea/sentence awkwardly across a chunk boundary, so context near the edges isn’t lost</li>
+<li class="has-line-data" data-line-start="195" data-line-end="196">C. To make embeddings deterministic</li>
+<li class="has-line-data" data-line-start="196" data-line-end="198">D. Overlap has no practical effect and is purely a convention</li>
+</ul>
+<p class="has-line-data" data-line-start="198" data-line-end="199"><strong>B11.</strong> What does a vector database’s “distance metric” (e.g., Cosine similarity) determine?</p>
+<ul>
+<li class="has-line-data" data-line-start="200" data-line-end="201">A. How many tools the agent can call per step</li>
+<li class="has-line-data" data-line-start="201" data-line-end="202">B. How “closeness”/similarity between two embedding vectors is measured/scored during nearest-neighbor search</li>
+<li class="has-line-data" data-line-start="202" data-line-end="203">C. The physical storage location of the database</li>
+<li class="has-line-data" data-line-start="203" data-line-end="205">D. The maximum number of documents that can be stored</li>
+</ul>
+<p class="has-line-data" data-line-start="205" data-line-end="206"><strong>B12.</strong> What is the main risk of NOT grounding an agent that answers questions about live business data (e.g., customer records)?</p>
+<ul>
+<li class="has-line-data" data-line-start="207" data-line-end="208">A. Increased latency only</li>
+<li class="has-line-data" data-line-start="208" data-line-end="209">B. The model may hallucinate plausible-sounding but false facts (e.g., invented customer names, numbers, or history) because it has no access to authoritative live data</li>
+<li class="has-line-data" data-line-start="209" data-line-end="210">C. Higher API costs only</li>
+<li class="has-line-data" data-line-start="210" data-line-end="212">D. There is no risk if the system prompt is well-written</li>
+</ul>
+<p class="has-line-data" data-line-start="212" data-line-end="213"><strong>B13.</strong> In an agent system prompt, what is the purpose of an explicit “tool-selection policy” (e.g., “use the RAG tool for policy questions, use CRM tools for customer facts, combine both when needed”)?</p>
+<ul>
+<li class="has-line-data" data-line-start="214" data-line-end="215">A. It’s decorative and has no measurable effect on behavior</li>
+<li class="has-line-data" data-line-start="215" data-line-end="216">B. It guides the model’s decision-making at each loop step toward choosing the right action, improving reliability and reducing unnecessary or incorrect tool calls</li>
+<li class="has-line-data" data-line-start="216" data-line-end="217">C. It replaces the need for tool schemas entirely</li>
+<li class="has-line-data" data-line-start="217" data-line-end="219">D. It is only relevant for multi-agent systems, not single agents</li>
+</ul>
+<p class="has-line-data" data-line-start="219" data-line-end="220"><strong>B14.</strong> What is the benefit of enforcing a structured output schema (e.g., via Zod/JSON Schema) on an LLM’s final response?</p>
+<ul>
+<li class="has-line-data" data-line-start="221" data-line-end="222">A. It makes the model’s response faster to generate</li>
+<li class="has-line-data" data-line-start="222" data-line-end="223">B. It guarantees the response conforms to a predictable, machine-parseable shape, making downstream code (UI rendering, further processing) reliable instead of parsing free-form text</li>
+<li class="has-line-data" data-line-start="223" data-line-end="224">C. It prevents the model from ever making factual errors</li>
+<li class="has-line-data" data-line-start="224" data-line-end="226">D. It eliminates the need for a system prompt</li>
+</ul>
+<p class="has-line-data" data-line-start="226" data-line-end="227"><strong>B15.</strong> What distinguishes a deterministic “workflow” (fixed sequence of steps) from an “agentic loop” in orchestration design?</p>
+<ul>
+<li class="has-line-data" data-line-start="228" data-line-end="229">A. Workflows cannot call tools at all, ever</li>
+<li class="has-line-data" data-line-start="229" data-line-end="230">B. A workflow executes a predefined, typically linear/branching sequence of steps regardless of intermediate content; an agentic loop lets the model itself decide, at runtime, which action (if any) to take next and when to stop</li>
+<li class="has-line-data" data-line-start="230" data-line-end="231">C. Agentic loops are always faster than workflows</li>
+<li class="has-line-data" data-line-start="231" data-line-end="233">D. There is no real distinction; the terms are synonyms</li>
+</ul>
+<p class="has-line-data" data-line-start="233" data-line-end="234"><strong>B16.</strong> Why might a system design deliberately use a plain deterministic workflow (rather than a free-form agentic loop) for a task like “generate an executive briefing from CRM + knowledge-base context”?</p>
+<ul>
+<li class="has-line-data" data-line-start="235" data-line-end="236">A. Because workflows are cheaper to run in all cases</li>
+<li class="has-line-data" data-line-start="236" data-line-end="237">B. Because the task’s steps and data sources are known in advance, so a fixed pipeline gives more predictable behavior, cost, and latency than letting the model improvise tool calls</li>
+<li class="has-line-data" data-line-start="237" data-line-end="238">C. Because agentic loops cannot use structured output schemas</li>
+<li class="has-line-data" data-line-start="238" data-line-end="240">D. Because MCP servers cannot be called from a workflow</li>
+</ul>
+<p class="has-line-data" data-line-start="240" data-line-end="241"><strong>B17.</strong> What is “conversation memory” in the context of an agent framework (e.g., Mastra’s <code>Memory</code> feature), and why does its absence matter?</p>
+<ul>
+<li class="has-line-data" data-line-start="242" data-line-end="243">A. It refers to GPU memory allocated to the model; its absence only affects performance</li>
+<li class="has-line-data" data-line-start="243" data-line-end="244">B. It’s a mechanism for persisting and reloading prior conversation turns/context across requests; without it, each call is stateless, so the agent has no awareness of earlier turns in the same conversation beyond what the caller resends</li>
+<li class="has-line-data" data-line-start="244" data-line-end="245">C. It is a synonym for the vector database used in RAG</li>
+<li class="has-line-data" data-line-start="245" data-line-end="247">D. It has no relationship to multi-turn conversations</li>
+</ul>
+<p class="has-line-data" data-line-start="247" data-line-end="248"><strong>B18.</strong> Which best describes the difference between an LLM “hallucination” and a “grounded” answer produced via tool use?</p>
+<ul>
+<li class="has-line-data" data-line-start="249" data-line-end="250">A. There is no difference; both terms describe the same phenomenon</li>
+<li class="has-line-data" data-line-start="250" data-line-end="251">B. A hallucination is a fluent but unverified/fabricated claim generated from the model’s internal parameters; a grounded answer is derived from and traceable to retrieved/tool-provided evidence</li>
+<li class="has-line-data" data-line-start="251" data-line-end="252">C. Hallucinations only occur with small models; large models never hallucinate</li>
+<li class="has-line-data" data-line-start="252" data-line-end="254">D. Grounded answers are always shorter than hallucinated ones</li>
+</ul>
+<p class="has-line-data" data-line-start="254" data-line-end="255"><strong>B19.</strong> Why does giving an agent a bounded step limit (e.g., <code>maxSteps: 5</code>) matter operationally?</p>
+<ul>
+<li class="has-line-data" data-line-start="256" data-line-end="257">A. It has no operational purpose, it is just a default value</li>
+<li class="has-line-data" data-line-start="257" data-line-end="258">B. It caps latency/cost and prevents runaway loops where the model repeatedly calls tools without converging on an answer</li>
+<li class="has-line-data" data-line-start="258" data-line-end="259">C. It determines how many tools the agent has access to</li>
+<li class="has-line-data" data-line-start="259" data-line-end="261">D. It is required by the MCP specification</li>
+</ul>
+<p class="has-line-data" data-line-start="261" data-line-end="262"><strong>B20.</strong> In multi-tool agents, why is providing an explicit input/output schema (e.g., via Zod) for each tool important, beyond documentation?</p>
+<ul>
+<li class="has-line-data" data-line-start="263" data-line-end="264">A. It has no functional effect, it’s purely for developers reading the code</li>
+<li class="has-line-data" data-line-start="264" data-line-end="265">B. It lets the framework validate/coerce the model’s tool-call arguments and the tool’s return value at runtime, catching malformed calls before they reach business logic</li>
+<li class="has-line-data" data-line-start="265" data-line-end="266">C. It automatically improves the underlying LLM’s reasoning ability</li>
+<li class="has-line-data" data-line-start="266" data-line-end="268">D. It is only used to generate API documentation websites</li>
+</ul>
+<hr>
+<h2 class="code-line has-line-data" data-line-start="270" data-line-end="271"><a id="Section_C_NestJS_Backend_Implementation_270"></a>Section C — NestJS Backend Implementation</h2>
+<p class="has-line-data" data-line-start="272" data-line-end="273"><strong>C1.</strong> What decorator and route prefix does the chat endpoint use?</p>
+<ul>
+<li class="has-line-data" data-line-start="274" data-line-end="275">A. <code>@Controller(&quot;chat&quot;)</code> with a <code>@Get()</code> handler</li>
+<li class="has-line-data" data-line-start="275" data-line-end="276">B. <code>@Controller(&quot;api/chat&quot;)</code> with a single <code>@Post()</code> handler calling <code>mastraService.chat(...)</code></li>
+<li class="has-line-data" data-line-start="276" data-line-end="277">C. <code>@Controller(&quot;api/agents&quot;)</code> with <code>@Post(&quot;chat&quot;)</code></li>
+<li class="has-line-data" data-line-start="277" data-line-end="279">D. No controller — the chat route is defined directly in <code>main.ts</code></li>
+</ul>
+<p class="has-line-data" data-line-start="279" data-line-end="280"><strong>C2.</strong> How is file upload handled in <code>DocumentController</code>?</p>
+<ul>
+<li class="has-line-data" data-line-start="281" data-line-end="282">A. A raw Express middleware parses <code>multipart/form-data</code> manually</li>
+<li class="has-line-data" data-line-start="282" data-line-end="283">B. <code>@Post(&quot;upload&quot;)</code> combined with <code>@UseInterceptors(FileInterceptor(&quot;file&quot;))</code> and a <code>@UploadedFile()</code> parameter, throwing <code>BadRequestException</code> if no file is present</li>
+<li class="has-line-data" data-line-start="283" data-line-end="284">C. Files are uploaded directly to Qdrant via a gRPC stream</li>
+<li class="has-line-data" data-line-start="284" data-line-end="286">D. <code>@Body()</code> alone is used to receive the raw file buffer</li>
+</ul>
+<p class="has-line-data" data-line-start="286" data-line-end="287"><strong>C3.</strong> Which NestJS module wires up file-upload size limits, and how?</p>
+<ul>
+<li class="has-line-data" data-line-start="288" data-line-end="289">A. <code>AgentsModule</code>, via a custom <code>FileSizeGuard</code></li>
+<li class="has-line-data" data-line-start="289" data-line-end="290">B. <code>DocumentsModule</code>, via <code>MulterModule.register({ limits: { fileSize: 10 * 1024 * 1024 } })</code></li>
+<li class="has-line-data" data-line-start="290" data-line-end="291">C. <code>VectorModule</code>, via a Qdrant collection quota</li>
+<li class="has-line-data" data-line-start="291" data-line-end="293">D. It’s hardcoded in <code>main.ts</code> as an Express body-parser limit</li>
+</ul>
+<p class="has-line-data" data-line-start="293" data-line-end="294"><strong>C4.</strong> How are Mongoose schemas defined and registered for <code>Customer</code>, <code>Document</code>, and <code>Meeting</code> entities?</p>
+<ul>
+<li class="has-line-data" data-line-start="295" data-line-end="296">A. Using plain Mongoose <code>Schema</code> objects with no decorators, registered in <code>app.module.ts</code> only</li>
+<li class="has-line-data" data-line-start="296" data-line-end="297">B. Using <code>@Schema()</code>/<code>@Prop()</code> decorators to define entity classes, then <code>SchemaFactory.createForClass(Entity)</code>, registered per-feature-module via <code>MongooseModule.forFeature([...])</code></li>
+<li class="has-line-data" data-line-start="297" data-line-end="298">C. Using GraphQL type definitions that NestJS auto-converts to Mongoose schemas</li>
+<li class="has-line-data" data-line-start="298" data-line-end="300">D. Schemas are defined directly inside the controllers</li>
+</ul>
+<p class="has-line-data" data-line-start="300" data-line-end="301"><strong>C5.</strong> Where is the MongoDB connection itself established, and how?</p>
+<ul>
+<li class="has-line-data" data-line-start="302" data-line-end="303">A. In each feature module independently via <code>MongooseModule.forRoot()</code></li>
+<li class="has-line-data" data-line-start="303" data-line-end="304">B. In <code>AppModule</code>, via <code>MongooseModule.forRootAsync({ inject: [ConfigService], useFactory: ... })</code></li>
+<li class="has-line-data" data-line-start="304" data-line-end="305">C. In <code>main.ts</code>, via a manual <code>mongoose.connect()</code> call before <code>NestFactory.create()</code></li>
+<li class="has-line-data" data-line-start="305" data-line-end="307">D. MongoDB connects lazily on first query with no explicit setup</li>
+</ul>
+<p class="has-line-data" data-line-start="307" data-line-end="308"><strong>C6.</strong> How is configuration (<code>port</code>, <code>mongoUrl</code>, <code>qdrant</code>, <code>llm</code>, etc.) loaded and made available across the app?</p>
+<ul>
+<li class="has-line-data" data-line-start="309" data-line-end="310">A. Via <code>process.env</code> accessed directly in every service</li>
+<li class="has-line-data" data-line-start="310" data-line-end="311">B. Via a plain factory function in <code>configuration.ts</code> passed to <code>ConfigModule.forRoot({ isGlobal: true, load: [configuration] })</code>, then consumed everywhere via injected <code>ConfigService.get&lt;T&gt;(&quot;key.path&quot;)</code></li>
+<li class="has-line-data" data-line-start="311" data-line-end="312">C. Via a JSON file read synchronously in each module’s constructor</li>
+<li class="has-line-data" data-line-start="312" data-line-end="314">D. Via <code>registerAs()</code> namespaced configs only, with no global module</li>
+</ul>
+<p class="has-line-data" data-line-start="314" data-line-end="315"><strong>C7.</strong> What request validation is actually applied to the <code>/api/chat</code> endpoint’s request body?</p>
+<ul>
+<li class="has-line-data" data-line-start="316" data-line-end="317">A. A Zod schema, matching the tool-output validation style used elsewhere</li>
+<li class="has-line-data" data-line-start="317" data-line-end="318">B. A <code>ChatRequestDto</code> class using <code>class-validator</code> decorators (<code>@IsString()</code>, <code>@MinLength(1)</code> on <code>message</code>; <code>@IsOptional() @IsString()</code> on <code>conversationId</code>), enforced by a global <code>ValidationPipe</code></li>
+<li class="has-line-data" data-line-start="318" data-line-end="319">C. No validation at all — the body is passed straight to the agent</li>
+<li class="has-line-data" data-line-start="319" data-line-end="321">D. A custom <code>PipeTransform</code> that manually checks <code>typeof body.message === &quot;string&quot;</code></li>
+</ul>
+<p class="has-line-data" data-line-start="321" data-line-end="322"><strong>C8.</strong> Where and how is the global <code>ValidationPipe</code> registered, and with what options?</p>
+<ul>
+<li class="has-line-data" data-line-start="323" data-line-end="324">A. Per-controller via <code>@UsePipes(new ValidationPipe())</code> on each controller</li>
+<li class="has-line-data" data-line-start="324" data-line-end="325">B. In <code>main.ts</code>, via <code>app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }))</code></li>
+<li class="has-line-data" data-line-start="325" data-line-end="326">C. It isn’t registered globally; only <code>AgentsModule</code> applies it</li>
+<li class="has-line-data" data-line-start="326" data-line-end="328">D. Inside <code>ChatRequestDto</code> itself via a class decorator</li>
+</ul>
+<p class="has-line-data" data-line-start="328" data-line-end="329"><strong>C9.</strong> True or false: Zod schemas (as seen in <code>mastra.service.ts</code> for structured LLM output) and <code>class-validator</code> DTOs (as seen in <code>ChatRequestDto</code>) serve the same layer of the application.</p>
+<ul>
+<li class="has-line-data" data-line-start="330" data-line-end="331">A. True — both validate incoming HTTP request bodies</li>
+<li class="has-line-data" data-line-start="331" data-line-end="332">B. False — <code>class-validator</code>/<code>ValidationPipe</code> validates incoming HTTP request bodies at the controller boundary, while Zod schemas constrain/validate LLM tool-call arguments and structured generation output, a different boundary entirely</li>
+<li class="has-line-data" data-line-start="332" data-line-end="333">C. True — Zod replaced class-validator everywhere in this codebase</li>
+<li class="has-line-data" data-line-start="333" data-line-end="335">D. False — Zod is only used in the frontend, never the backend</li>
+</ul>
+<p class="has-line-data" data-line-start="335" data-line-end="336"><strong>C10.</strong> How does the codebase handle cross-cutting error handling for LLM-related failures (e.g., missing/invalid API keys)?</p>
+<ul>
+<li class="has-line-data" data-line-start="337" data-line-end="338">A. A try/catch block duplicated in every controller method</li>
+<li class="has-line-data" data-line-start="338" data-line-end="339">B. A global exception filter, <code>LlmErrorFilter</code>, decorated with <code>@Catch()</code> (catch-all) and registered via <code>app.useGlobalFilters(new LlmErrorFilter())</code> in <code>main.ts</code>; it passes through existing <code>HttpException</code>s and maps API-key-related error messages to a <code>503 SERVICE_UNAVAILABLE</code></li>
+<li class="has-line-data" data-line-start="339" data-line-end="340">C. A NestJS Guard that blocks requests if the API key is missing</li>
+<li class="has-line-data" data-line-start="340" data-line-end="342">D. An interceptor that retries failed LLM calls up to 3 times automatically</li>
+</ul>
+<p class="has-line-data" data-line-start="342" data-line-end="343"><strong>C11.</strong> Are there any custom NestJS Guards (<code>CanActivate</code>) or Pipes (<code>PipeTransform</code>) in this codebase, besides the global <code>ValidationPipe</code>?</p>
+<ul>
+<li class="has-line-data" data-line-start="344" data-line-end="345">A. Yes — an <code>AuthGuard</code> protects all <code>/api</code> routes</li>
+<li class="has-line-data" data-line-start="345" data-line-end="346">B. No — no custom Guards or Pipes exist anywhere in the repo; the only pipe in use is the built-in global <code>ValidationPipe</code></li>
+<li class="has-line-data" data-line-start="346" data-line-end="347">C. Yes — a custom <code>RoleGuard</code> restricts CRM tool access</li>
+<li class="has-line-data" data-line-start="347" data-line-end="349">D. Yes — a <code>ParseObjectIdPipe</code> validates all Mongo ObjectId route params</li>
+</ul>
+<p class="has-line-data" data-line-start="349" data-line-end="350"><strong>C12.</strong> How is CORS configured for the backend?</p>
+<ul>
+<li class="has-line-data" data-line-start="351" data-line-end="352">A. It isn’t configured — CORS is fully open by default</li>
+<li class="has-line-data" data-line-start="352" data-line-end="353">B. Via <code>app.enableCors({ origin: config.get(&quot;corsOrigin&quot;), credentials: true })</code> in <code>main.ts</code></li>
+<li class="has-line-data" data-line-start="353" data-line-end="354">C. Via a third-party <code>cors</code> Express middleware registered manually</li>
+<li class="has-line-data" data-line-start="354" data-line-end="356">D. Via a NestJS <code>@Cors()</code> decorator on <code>AppModule</code></li>
+</ul>
+<p class="has-line-data" data-line-start="356" data-line-end="357"><strong>C13.</strong> Which modules does <code>AgentsModule</code> import, and why?</p>
+<ul>
+<li class="has-line-data" data-line-start="358" data-line-end="359">A. None — it’s fully self-contained</li>
+<li class="has-line-data" data-line-start="359" data-line-end="360">B. <code>VectorModule</code> and <code>McpModule</code>, because <code>MastraService</code> needs the RAG vector search and the MCP client to build the <code>CloudPartnershipAgent</code>’s tools</li>
+<li class="has-line-data" data-line-start="360" data-line-end="361">C. <code>CustomersModule</code> and <code>TranscriptionModule</code>, to directly query Mongo itself</li>
+<li class="has-line-data" data-line-start="361" data-line-end="363">D. Only <code>McpModule</code>; RAG is handled inside <code>AgentsModule</code> itself</li>
+</ul>
+<p class="has-line-data" data-line-start="363" data-line-end="364"><strong>C14.</strong> How does <code>WorkflowsController</code>’s action-decision endpoint validate the incoming decision value?</p>
+<ul>
+<li class="has-line-data" data-line-start="365" data-line-end="366">A. Via a dedicated DTO with a <code>class-validator</code> <code>@IsIn([&quot;approve&quot;, &quot;reject&quot;])</code> decorator</li>
+<li class="has-line-data" data-line-start="366" data-line-end="367">B. Inline in the controller/service logic, throwing a <code>BadRequestException</code> if the decision value isn’t recognized — no dedicated DTO/class-validator is used for this route</li>
+<li class="has-line-data" data-line-start="367" data-line-end="368">C. Via a Zod schema shared with the LLM tool definitions</li>
+<li class="has-line-data" data-line-start="368" data-line-end="370">D. It isn’t validated; any string is accepted and stored as-is</li>
+</ul>
+<p class="has-line-data" data-line-start="370" data-line-end="371"><strong>C15.</strong> What dependency-injection pattern is used to give services access to their Mongoose models?</p>
+<ul>
+<li class="has-line-data" data-line-start="372" data-line-end="373">A. <code>@Inject(&quot;CUSTOM_TOKEN&quot;)</code> with manually registered custom providers</li>
+<li class="has-line-data" data-line-start="373" data-line-end="374">B. <code>@InjectModel(Entity.name)</code> constructor-parameter decorators (e.g. in <code>DocumentService</code>, <code>CustomerService</code>, <code>TranscriptionService</code>)</li>
+<li class="has-line-data" data-line-start="374" data-line-end="375">C. A singleton <code>DatabaseManager</code> class instantiated manually in each service</li>
+<li class="has-line-data" data-line-start="375" data-line-end="377">D. Property injection via <code>@Autowired</code>-style decorators</li>
+</ul>
+<hr>
+<h2 class="code-line has-line-data" data-line-start="379" data-line-end="380"><a id="Section_D_React_Frontend_Implementation_379"></a>Section D — React Frontend Implementation</h2>
+<p class="has-line-data" data-line-start="381" data-line-end="382"><strong>D1.</strong> Which data-fetching library powers all server-state management in the frontend, and where is its client configured?</p>
+<ul>
+<li class="has-line-data" data-line-start="383" data-line-end="384">A. SWR, configured in <code>App.tsx</code></li>
+<li class="has-line-data" data-line-start="384" data-line-end="385">B. <code>@tanstack/react-query</code>, with <code>QueryClient</code> instantiated in <code>main.tsx</code> (<code>defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } }</code>) and <code>QueryClientProvider</code> wrapping the app</li>
+<li class="has-line-data" data-line-start="385" data-line-end="386">C. Apollo Client, configured for a GraphQL backend</li>
+<li class="has-line-data" data-line-start="386" data-line-end="388">D. Axios interceptors with a custom in-memory cache</li>
+</ul>
+<p class="has-line-data" data-line-start="388" data-line-end="389"><strong>D2.</strong> How does the frontend make HTTP calls to the backend — what does <code>src/api/client.ts</code> use?</p>
+<ul>
+<li class="has-line-data" data-line-start="390" data-line-end="391">A. Axios, with a shared instance and interceptors for error handling</li>
+<li class="has-line-data" data-line-start="391" data-line-end="392">B. Native <code>fetch</code>, via a generic <code>request&lt;T&gt;(path, init)</code> helper that prefixes calls with <code>/api</code> and throws an <code>Error</code> on non-OK responses</li>
+<li class="has-line-data" data-line-start="392" data-line-end="393">C. <code>XMLHttpRequest</code> wrapped in a custom promise utility</li>
+<li class="has-line-data" data-line-start="393" data-line-end="395">D. GraphQL queries sent over a WebSocket</li>
+</ul>
+<p class="has-line-data" data-line-start="395" data-line-end="396"><strong>D3.</strong> Which <code>useQuery</code> call is configured with <code>enabled: !!selected</code>, and why?</p>
+<ul>
+<li class="has-line-data" data-line-start="397" data-line-end="398">A. The <code>[&quot;customers&quot;]</code> query, to avoid fetching until the page mounts</li>
+<li class="has-line-data" data-line-start="398" data-line-end="399">B. The <code>[&quot;meetings&quot;, selected]</code> query in <code>CustomersPage</code>, so it only runs once a customer is selected</li>
+<li class="has-line-data" data-line-start="399" data-line-end="400">C. The <code>[&quot;documents&quot;]</code> query, to avoid re-fetching after upload</li>
+<li class="has-line-data" data-line-start="400" data-line-end="402">D. The <code>[&quot;actions&quot;]</code> query, to avoid polling before the workflow page loads</li>
+</ul>
+<p class="has-line-data" data-line-start="402" data-line-end="403"><strong>D4.</strong> After a successful document upload mutation, how does the UI refresh the document list?</p>
+<ul>
+<li class="has-line-data" data-line-start="404" data-line-end="405">A. It doesn’t — the user must manually reload the page</li>
+<li class="has-line-data" data-line-start="405" data-line-end="406">B. The <code>onSuccess</code> callback calls <code>queryClient.invalidateQueries({ queryKey: [&quot;documents&quot;] })</code>, prompting React Query to refetch the <code>[&quot;documents&quot;]</code> query</li>
+<li class="has-line-data" data-line-start="406" data-line-end="407">C. A <code>useEffect</code> polls the documents endpoint every 5 seconds</li>
+<li class="has-line-data" data-line-start="407" data-line-end="409">D. <code>window.location.reload()</code> is called inside the mutation</li>
+</ul>
+<p class="has-line-data" data-line-start="409" data-line-end="410"><strong>D5.</strong> How many distinct <code>useMutation</code> calls exist in the frontend, and what do they cover?</p>
+<ul>
+<li class="has-line-data" data-line-start="411" data-line-end="412">A. One — only the chat send action</li>
+<li class="has-line-data" data-line-start="412" data-line-end="413">B. Four — sending a chat message, uploading a document, generating an executive briefing, and approving/rejecting a recommended action</li>
+<li class="has-line-data" data-line-start="413" data-line-end="414">C. Six — including login and logout mutations</li>
+<li class="has-line-data" data-line-start="414" data-line-end="416">D. Two — chat send and document upload only</li>
+</ul>
+<p class="has-line-data" data-line-start="416" data-line-end="417"><strong>D6.</strong> Does the chat-sending mutation invalidate any React Query cache entries on success?</p>
+<ul>
+<li class="has-line-data" data-line-start="418" data-line-end="419">A. Yes, it invalidates <code>[&quot;chat&quot;]</code></li>
+<li class="has-line-data" data-line-start="419" data-line-end="420">B. No — its <code>onSuccess</code> handler updates local component state (<code>conversationId.current</code>, appended assistant message, <code>activeResponse</code>) rather than calling <code>invalidateQueries</code></li>
+<li class="has-line-data" data-line-start="420" data-line-end="421">C. Yes, it invalidates <code>[&quot;customers&quot;]</code> since chat can reference customer data</li>
+<li class="has-line-data" data-line-start="421" data-line-end="423">D. Yes, it invalidates all active queries globally</li>
+</ul>
+<p class="has-line-data" data-line-start="423" data-line-end="424"><strong>D7.</strong> How is the chat conversation ID tracked across messages within <code>ChatPage</code>?</p>
+<ul>
+<li class="has-line-data" data-line-start="425" data-line-end="426">A. In global state via a Context Provider</li>
+<li class="has-line-data" data-line-start="426" data-line-end="427">B. In a <code>useRef&lt;string | undefined&gt;</code>, not <code>useState</code>, since updating it should not trigger a re-render on its own</li>
+<li class="has-line-data" data-line-start="427" data-line-end="428">C. In the URL as a route param via <code>react-router-dom</code></li>
+<li class="has-line-data" data-line-start="428" data-line-end="430">D. In <code>localStorage</code>, read on every render</li>
+</ul>
+<p class="has-line-data" data-line-start="430" data-line-end="431"><strong>D8.</strong> Does this codebase use <code>useEffect</code> anywhere (e.g., to auto-scroll the chat panel)?</p>
+<ul>
+<li class="has-line-data" data-line-start="432" data-line-end="433">A. Yes, extensively, for scrolling, polling, and subscriptions</li>
+<li class="has-line-data" data-line-start="433" data-line-end="434">B. No — <code>useEffect</code> is not used anywhere in the frontend; for example, chat scrolling relies on plain CSS (<code>overflow-y-auto</code>) rather than a scroll-effect hook</li>
+<li class="has-line-data" data-line-start="434" data-line-end="435">C. Yes, but only in <code>AgentActivityPanel.tsx</code></li>
+<li class="has-line-data" data-line-start="435" data-line-end="437">D. Yes, in <code>main.tsx</code> to initialize the query client</li>
+</ul>
+<p class="has-line-data" data-line-start="437" data-line-end="438"><strong>D9.</strong> What global state management approach (Redux, Zustand, Context API) does this frontend use?</p>
+<ul>
+<li class="has-line-data" data-line-start="439" data-line-end="440">A. Redux Toolkit, with a single root store</li>
+<li class="has-line-data" data-line-start="440" data-line-end="441">B. None of those — there is no <code>React.createContext</code>/<code>useContext</code>, no Redux, no Zustand; all local UI state uses <code>useState</code>, and all server state lives in React Query’s cache</li>
+<li class="has-line-data" data-line-start="441" data-line-end="442">C. Zustand, with one store per page</li>
+<li class="has-line-data" data-line-start="442" data-line-end="444">D. The Context API, with a single <code>AppStateContext</code></li>
+</ul>
+<p class="has-line-data" data-line-start="444" data-line-end="445"><strong>D10.</strong> How does the frontend implement client-side routing, and what routes exist?</p>
+<ul>
+<li class="has-line-data" data-line-start="446" data-line-end="447">A. Manual state-based tab switching, no router library</li>
+<li class="has-line-data" data-line-start="447" data-line-end="448">B. <code>react-router-dom</code>’s <code>BrowserRouter</code>/<code>Routes</code>, with routes <code>/</code> (ChatPage), <code>/customers</code> (CustomersPage), <code>/documents</code> (DocumentsPage), and <code>/workflows</code> (WorkflowsPage)</li>
+<li class="has-line-data" data-line-start="448" data-line-end="449">C. Next.js file-based routing</li>
+<li class="has-line-data" data-line-start="449" data-line-end="451">D. Hash-based routing implemented manually with <code>window.location.hash</code></li>
+</ul>
+<p class="has-line-data" data-line-start="451" data-line-end="452"><strong>D11.</strong> What styling approach does the frontend use?</p>
+<ul>
+<li class="has-line-data" data-line-start="453" data-line-end="454">A. Material UI (MUI) component library</li>
+<li class="has-line-data" data-line-start="454" data-line-end="455">B. Tailwind CSS utility classes with a custom <code>brand</code> color, no component library like MUI/shadcn</li>
+<li class="has-line-data" data-line-start="455" data-line-end="456">C. Styled-components (CSS-in-JS)</li>
+<li class="has-line-data" data-line-start="456" data-line-end="458">D. Plain hand-written CSS files per component, no utility framework</li>
+</ul>
+<p class="has-line-data" data-line-start="458" data-line-end="459"><strong>D12.</strong> Are there any custom React hooks (files whose name starts with <code>use</code>) in this codebase?</p>
+<ul>
+<li class="has-line-data" data-line-start="460" data-line-end="461">A. Yes — <code>useChat</code>, <code>useCustomers</code>, and <code>useDocuments</code> custom hooks wrap the React Query calls</li>
+<li class="has-line-data" data-line-start="461" data-line-end="462">B. No — no custom hooks exist; <code>useQuery</code>/<code>useMutation</code>/<code>useState</code>/<code>useRef</code> are called directly inside page components</li>
+<li class="has-line-data" data-line-start="462" data-line-end="463">C. Yes — a single <code>useApi</code> hook wraps the <code>fetch</code> client</li>
+<li class="has-line-data" data-line-start="463" data-line-end="465">D. Yes — <code>useAgentActivity</code> centralizes the activity-panel logic</li>
+</ul>
+<p class="has-line-data" data-line-start="465" data-line-end="466"><strong>D13.</strong> How are shared TypeScript types (e.g., <code>ChatResponse</code>, <code>Customer</code>, <code>RecommendedAction</code>) organized?</p>
+<ul>
+<li class="has-line-data" data-line-start="467" data-line-end="468">A. Duplicated inline in every component that needs them</li>
+<li class="has-line-data" data-line-start="468" data-line-end="469">B. Centralized in a single <code>src/types.ts</code> file, imported wherever needed (e.g., by <code>api/client.ts</code> and page components)</li>
+<li class="has-line-data" data-line-start="469" data-line-end="470">C. Auto-generated from the NestJS DTOs via a codegen step</li>
+<li class="has-line-data" data-line-start="470" data-line-end="472">D. Defined as Zod schemas shared directly with the backend</li>
+</ul>
+<p class="has-line-data" data-line-start="472" data-line-end="473"><strong>D14.</strong> How does <code>AgentActivityPanel.tsx</code> receive the data it renders (<code>steps</code>, <code>toolCalls</code>, <code>sources</code>)?</p>
+<ul>
+<li class="has-line-data" data-line-start="474" data-line-end="475">A. It calls its own <code>useQuery</code> to fetch the latest chat response independently</li>
+<li class="has-line-data" data-line-start="475" data-line-end="476">B. Purely via props — it’s a presentational component with no hooks of its own, rendering fields passed down from the parent’s <code>ChatResponse</code> state</li>
+<li class="has-line-data" data-line-start="476" data-line-end="477">C. Via <code>useContext</code>, reading from a shared <code>ChatContext</code></li>
+<li class="has-line-data" data-line-start="477" data-line-end="479">D. Via a <code>useEffect</code> that subscribes to a WebSocket stream</li>
+</ul>
+<p class="has-line-data" data-line-start="479" data-line-end="480"><strong>D15.</strong> How is the document-upload file input handled after a successful upload?</p>
+<ul>
+<li class="has-line-data" data-line-start="481" data-line-end="482">A. The page fully remounts via a <code>key</code> prop change</li>
+<li class="has-line-data" data-line-start="482" data-line-end="483">B. The mutation’s <code>onSuccess</code> clears the file input using a ref, alongside invalidating the <code>[&quot;documents&quot;]</code> query</li>
+<li class="has-line-data" data-line-start="483" data-line-end="484">C. The file input is uncontrolled and never reset; the user must refresh manually</li>
+<li class="has-line-data" data-line-start="484" data-line-end="486">D. <code>useState</code> holds the <code>File</code> object and is reset via a <code>useEffect</code> cleanup function</li>
+</ul>
+<hr>
+<h2 class="code-line has-line-data" data-line-start="488" data-line-end="489"><a id="Answer_Key_Explanations_488"></a>Answer Key &amp; Explanations</h2>
+<h3 class="code-line has-line-data" data-line-start="490" data-line-end="491"><a id="Section_A_Solution_Design_Implementation_490"></a>Section A — Solution Design &amp; Implementation</h3>
+<table class="table table-striped table-bordered">
+<thead>
+<tr>
+<th>#</th>
+<th>Answer</th>
+<th>Explanation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A1</td>
+<td><strong>B</strong></td>
+<td><code>mastra.service.ts:118</code> calls <code>this.cloudPartnershipAgent.generate(message, { maxSteps: 5 })</code>, the sole agentic-loop entry point in the codebase.</td>
+</tr>
+<tr>
+<td>A2</td>
+<td><strong>C</strong></td>
+<td><code>maxSteps: 5</code> caps the internal decide→act→observe cycle at 5 iterations before the model must return a final answer.</td>
+</tr>
+<tr>
+<td>A3</td>
+<td><strong>B</strong></td>
+<td><code>mastra.service.ts:71-76</code> wires <code>tools: { searchKnowledgeBase, ...crmTools }</code> — a RAG tool plus 5 CRM tools defined in <code>crm.tools.ts:11-48</code>.</td>
+</tr>
+<tr>
+<td>A4</td>
+<td><strong>C</strong></td>
+<td>CRM tools call <code>mcp-client.service.ts</code>’s <code>callTool()</code>, which talks to the standalone <code>mcp-server</code> over HTTP; that server queries MongoDB (<code>mcp-server/src/tools.ts:10-97</code>).</td>
+</tr>
+<tr>
+<td>A5</td>
+<td><strong>C</strong></td>
+<td>Both sides use <code>StreamableHTTPServerTransport</code>/<code>StreamableHTTPClientTransport</code>, statelessly (<code>sessionIdGenerator: undefined</code>, fresh server+transport per POST).</td>
+</tr>
+<tr>
+<td>A6</td>
+<td><strong>B</strong></td>
+<td><code>embedding.service.ts</code> uses local Transformers.js <code>Xenova/all-MiniLM-L6-v2</code> (384-dim, mean pooling, normalized); <code>vector.service.ts</code> stores vectors in Qdrant collection <code>connact_knowledge</code> with Cosine distance.</td>
+</tr>
+<tr>
+<td>A7</td>
+<td><strong>C</strong></td>
+<td><code>common/chunking.ts:12-13</code> implements a sliding word-count window: 180 words per chunk with 30-word overlap — no tokenizer awareness.</td>
+</tr>
+<tr>
+<td>A8</td>
+<td><strong>C</strong></td>
+<td><code>DocumentService.onModuleInit</code> (<code>document.service.ts:50-87</code>) auto-bootstraps ingestion only when the collection’s document count is zero; there is no manual ingestion CLI for knowledge-docs.</td>
+</tr>
+<tr>
+<td>A9</td>
+<td><strong>B</strong></td>
+<td><code>common/llm.ts:9-15</code> uses <code>@ai-sdk/anthropic</code>’s <code>createAnthropic</code>, model id from env <code>ANTHROPIC_MODEL</code>, defaulting to <code>claude-sonnet-5</code>.</td>
+</tr>
+<tr>
+<td>A10</td>
+<td><strong>B</strong></td>
+<td>Both agents call <code>.generate()</code> without tools or <code>maxSteps</code>, making them single-shot structured-output generations rather than agentic loops.</td>
+</tr>
+<tr>
+<td>A11</td>
+<td><strong>B</strong></td>
+<td><code>executive-briefing.workflow.ts</code> builds a Mastra <code>Workflow</code> chaining <code>gatherCrmContext → gatherKnowledgeContext → synthesizeBriefing</code> via <code>.then()...commit()</code> — an explicitly deterministic, non-agentic pipeline (per the file’s own comments).</td>
+</tr>
+<tr>
+<td>A12</td>
+<td><strong>B</strong></td>
+<td>The agent’s system prompt (<code>agent.config.ts</code>) explicitly instructs it not to fabricate customer facts and to admit uncertainty, while relying on tool-retrieved data rather than the model’s own memory.</td>
+</tr>
+<tr>
+<td>A13</td>
+<td><strong>C</strong></td>
+<td>Structured outputs use Zod schemas (<code>meetingAnalysisOutputSchema</code>, <code>executiveBriefingOutputSchema</code>) passed as <code>{ output: schema }</code> into <code>.generate()</code>, not prompt-only requests or post-hoc parsing.</td>
+</tr>
+<tr>
+<td>A14</td>
+<td><strong>B</strong></td>
+<td><code>mastra.service.ts</code> generates/echoes a <code>conversationId</code> but never persists or reloads history; no Mastra <code>Memory</code> feature is wired in — each call is stateless (explicitly noted as a TODO in comments).</td>
+</tr>
+<tr>
+<td>A15</td>
+<td><strong>C</strong></td>
+<td>No guards, middleware, or auth mechanism was found protecting <code>POST /api/chat</code> or any other backend route.</td>
+</tr>
+<tr>
+<td>A16</td>
+<td><strong>C</strong></td>
+<td><code>frontend/src/api/client.ts</code> performs a plain <code>fetch</code> <code>POST /api/chat</code> with <code>{message, conversationId}</code> and awaits the full JSON response — no WebSocket/SSE streaming is implemented.</td>
+</tr>
+</tbody>
+</table>
+<h3 class="code-line has-line-data" data-line-start="511" data-line-end="512"><a id="Section_B_AI_Agent_Theory_511"></a>Section B — AI Agent Theory</h3>
+<table class="table table-striped table-bordered">
+<thead>
+<tr>
+<th>#</th>
+<th>Answer</th>
+<th>Explanation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>B1</td>
+<td><strong>B</strong></td>
+<td>The defining feature of an agentic loop is the model’s own reasoning driving repeated tool use until it decides it’s done (or a limit is hit) — not merely calling an API in a loop from outside code.</td>
+</tr>
+<tr>
+<td>B2</td>
+<td><strong>B</strong></td>
+<td>A tool definition exposes a callable capability to the model with a schema so the model can request it and the host can execute it and feed results back.</td>
+</tr>
+<tr>
+<td>B3</td>
+<td><strong>B</strong></td>
+<td>MCP is an open, model-agnostic protocol for connecting AI applications to tools/data sources via a standard client-server architecture.</td>
+</tr>
+<tr>
+<td>B4</td>
+<td><strong>B</strong></td>
+<td>Tools are actions the model can invoke (may have side effects); resources are addressable data the client can retrieve and supply as context — a distinct primitive in MCP’s spec.</td>
+</tr>
+<tr>
+<td>B5</td>
+<td><strong>B</strong></td>
+<td>Stateless Streamable HTTP lets the MCP server run as an independent, network-reachable service (its own container/host), unlike stdio which ties the server to a local child process.</td>
+</tr>
+<tr>
+<td>B6</td>
+<td><strong>B</strong></td>
+<td>Grounding means tethering output to verifiable external facts/data instead of trusting the model’s internal (parametric) knowledge alone, which reduces hallucination risk.</td>
+</tr>
+<tr>
+<td>B7</td>
+<td><strong>B</strong></td>
+<td>RAG retrieves relevant passages (typically via vector similarity search) and injects them into the prompt so generation is grounded in that retrieved content.</td>
+</tr>
+<tr>
+<td>B8</td>
+<td><strong>B</strong></td>
+<td>Embedding models map text to vectors positioned by semantic similarity, which is what enables nearest-neighbor retrieval in a vector store.</td>
+</tr>
+<tr>
+<td>B9</td>
+<td><strong>B</strong></td>
+<td>Chunking keeps pieces small and topically coherent so retrieval returns focused, relevant context instead of noisy, oversized documents.</td>
+</tr>
+<tr>
+<td>B10</td>
+<td><strong>B</strong></td>
+<td>Overlap prevents a relevant sentence/idea from being cut in half at a chunk boundary, preserving local context.</td>
+</tr>
+<tr>
+<td>B11</td>
+<td><strong>B</strong></td>
+<td>A distance/similarity metric (e.g., cosine) defines how “close” two vectors are considered, which directly determines search ranking/results.</td>
+</tr>
+<tr>
+<td>B12</td>
+<td><strong>B</strong></td>
+<td>Without grounding, a model answering about live/dynamic business data has nothing but its stale/generic training data to draw on, inviting fabricated specifics.</td>
+</tr>
+<tr>
+<td>B13</td>
+<td><strong>B</strong></td>
+<td>An explicit tool-selection policy in the system prompt shapes the model’s per-step decisions, improving reliability of the agentic loop’s action choices.</td>
+</tr>
+<tr>
+<td>B14</td>
+<td><strong>B</strong></td>
+<td>Schema-enforced structured output guarantees a predictable shape for downstream consumption (UI, further logic), rather than relying on fragile text parsing.</td>
+</tr>
+<tr>
+<td>B15</td>
+<td><strong>B</strong></td>
+<td>The core distinction is <em>who decides the next step</em>: a workflow’s sequence is fixed by the developer; an agentic loop’s sequence is decided dynamically by the model at runtime.</td>
+</tr>
+<tr>
+<td>B16</td>
+<td><strong>B</strong></td>
+<td>When the required steps and data sources are already known and fixed, a deterministic workflow gives more predictable cost/latency/behavior than letting a model improvise via an agentic loop.</td>
+</tr>
+<tr>
+<td>B17</td>
+<td><strong>B</strong></td>
+<td>Conversation memory persists/reloads prior turns across requests; its absence means every call is self-contained and the agent “forgets” earlier turns unless the caller resupplies them.</td>
+</tr>
+<tr>
+<td>B18</td>
+<td><strong>B</strong></td>
+<td>Hallucination = fluent but unverified/fabricated model output from parametric memory; grounded answer = traceable to actual retrieved/tool-sourced evidence.</td>
+</tr>
+<tr>
+<td>B19</td>
+<td><strong>B</strong></td>
+<td>A step cap bounds worst-case latency/cost and guards against a model looping indefinitely without producing a final answer.</td>
+</tr>
+<tr>
+<td>B20</td>
+<td><strong>B</strong></td>
+<td>Tool schemas allow the framework to validate/coerce arguments and return values at runtime, catching malformed model output before it reaches application logic — a functional (not just documentation) benefit.</td>
+</tr>
+</tbody>
+</table>
+<h3 class="code-line has-line-data" data-line-start="536" data-line-end="537"><a id="Section_C_NestJS_Backend_Implementation_536"></a>Section C — NestJS Backend Implementation</h3>
+<table class="table table-striped table-bordered">
+<thead>
+<tr>
+<th>#</th>
+<th>Answer</th>
+<th>Explanation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C1</td>
+<td><strong>B</strong></td>
+<td><code>agents.controller.ts:13</code> uses <code>@Controller(&quot;api/chat&quot;)</code> with one <code>@Post()</code> handler calling <code>mastraService.chat(...)</code>.</td>
+</tr>
+<tr>
+<td>C2</td>
+<td><strong>B</strong></td>
+<td><code>document.controller.ts:19-25</code> combines <code>@Post(&quot;upload&quot;)</code>, <code>@UseInterceptors(FileInterceptor(&quot;file&quot;))</code>, and <code>@UploadedFile()</code>, throwing <code>BadRequestException</code> when no file is supplied.</td>
+</tr>
+<tr>
+<td>C3</td>
+<td><strong>B</strong></td>
+<td><code>documents.module.ts:9-19</code> registers <code>MulterModule.register({ limits: { fileSize: 10 * 1024 * 1024 } })</code> alongside the Mongoose feature and <code>VectorModule</code>.</td>
+</tr>
+<tr>
+<td>C4</td>
+<td><strong>B</strong></td>
+<td>Entities like <code>CustomerEntity</code>/<code>DocumentEntity</code>/<code>MeetingEntity</code> use <code>@Schema()</code>/<code>@Prop()</code>, are turned into schemas via <code>SchemaFactory.createForClass</code>, and registered per-module with <code>MongooseModule.forFeature([...])</code>.</td>
+</tr>
+<tr>
+<td>C5</td>
+<td><strong>B</strong></td>
+<td>The actual DB connection is established once, in <code>app.module.ts:16-19</code>, via <code>MongooseModule.forRootAsync({ inject: [ConfigService], useFactory })</code> — feature modules only register schemas, not connections.</td>
+</tr>
+<tr>
+<td>C6</td>
+<td><strong>B</strong></td>
+<td><code>configuration.ts:9-29</code> is a plain factory (not <code>registerAs</code>) loaded via <code>ConfigModule.forRoot({ isGlobal: true, load: [configuration] })</code>; every service reads values with injected <code>ConfigService.get&lt;T&gt;(&quot;key.path&quot;)</code>.</td>
+</tr>
+<tr>
+<td>C7</td>
+<td><strong>B</strong></td>
+<td><code>ChatRequestDto</code> (<code>agents/dto/chat.dto.ts</code>) applies <code>class-validator</code> decorators, and the global <code>ValidationPipe</code> (registered in <code>main.ts</code>) enforces them — Zod is not used for this HTTP boundary.</td>
+</tr>
+<tr>
+<td>C8</td>
+<td><strong>B</strong></td>
+<td><code>main.ts:13</code> calls <code>app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }))</code>, applying to every route, not per-controller.</td>
+</tr>
+<tr>
+<td>C9</td>
+<td><strong>B</strong></td>
+<td><code>class-validator</code>/<code>ValidationPipe</code> guards the HTTP request-body boundary; Zod schemas in <code>mastra.service.ts</code> constrain a completely different boundary — LLM tool arguments/structured output. The two don’t overlap.</td>
+</tr>
+<tr>
+<td>C10</td>
+<td><strong>B</strong></td>
+<td><code>LlmErrorFilter</code> (<code>common/filters/llm-error.filter.ts:14</code>) is a catch-all <code>@Catch()</code> filter registered globally via <code>app.useGlobalFilters(new LlmErrorFilter())</code> in <code>main.ts:14</code>; it re-throws existing <code>HttpException</code>s and maps API-key error text to <code>503</code>.</td>
+</tr>
+<tr>
+<td>C11</td>
+<td><strong>B</strong></td>
+<td>No <code>CanActivate</code> guards or custom <code>PipeTransform</code> pipes exist in the repo; the only pipe at work is the built-in global <code>ValidationPipe</code>.</td>
+</tr>
+<tr>
+<td>C12</td>
+<td><strong>B</strong></td>
+<td><code>main.ts:12</code> configures <code>app.enableCors({ origin: config.get(&quot;corsOrigin&quot;), credentials: true })</code> — there’s no separate Express <code>cors</code> middleware or decorator.</td>
+</tr>
+<tr>
+<td>C13</td>
+<td><strong>B</strong></td>
+<td><code>agents.module.ts:14-20</code> imports <code>[VectorModule, McpModule]</code> because <code>MastraService</code> needs RAG search and the MCP client to assemble the <code>CloudPartnershipAgent</code>’s tool set.</td>
+</tr>
+<tr>
+<td>C14</td>
+<td><strong>B</strong></td>
+<td><code>WorkflowsController</code>/<code>WorkflowsService</code> validate the decision value inline, throwing <code>BadRequestException</code> for unrecognized values — there’s no dedicated DTO or <code>class-validator</code> rule for this route.</td>
+</tr>
+<tr>
+<td>C15</td>
+<td><strong>B</strong></td>
+<td>Services like <code>DocumentService</code>, <code>CustomerService</code>, and <code>TranscriptionService</code> receive their Mongoose models via <code>@InjectModel(Entity.name)</code> constructor parameters — no custom DI tokens are used.</td>
+</tr>
+</tbody>
+</table>
+<h3 class="code-line has-line-data" data-line-start="556" data-line-end="557"><a id="Section_D_React_Frontend_Implementation_556"></a>Section D — React Frontend Implementation</h3>
+<table class="table table-striped table-bordered">
+<thead>
+<tr>
+<th>#</th>
+<th>Answer</th>
+<th>Explanation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D1</td>
+<td><strong>B</strong></td>
+<td><code>@tanstack/react-query</code> (<code>package.json</code>) is the sole data-fetching layer; <code>QueryClient</code> is created in <code>main.tsx</code> with <code>{ retry: 1, refetchOnWindowFocus: false }</code> and provided via <code>QueryClientProvider</code>.</td>
+</tr>
+<tr>
+<td>D2</td>
+<td><strong>B</strong></td>
+<td><code>src/api/client.ts</code> uses native <code>fetch</code> through a generic <code>request&lt;T&gt;(path, init)</code> helper that prefixes <code>/api</code> and throws an <code>Error</code> on non-OK responses — no axios anywhere.</td>
+</tr>
+<tr>
+<td>D3</td>
+<td><strong>B</strong></td>
+<td><code>CustomersPage.tsx:9-13</code>’s <code>[&quot;meetings&quot;, selected]</code> query passes <code>enabled: !!selected</code>, so it only fires once a customer is actually selected.</td>
+</tr>
+<tr>
+<td>D4</td>
+<td><strong>B</strong></td>
+<td>The upload mutation’s <code>onSuccess</code> (<code>DocumentsPage.tsx:23-29</code>) calls <code>queryClient.invalidateQueries({ queryKey: [&quot;documents&quot;] })</code>, triggering an automatic refetch.</td>
+</tr>
+<tr>
+<td>D5</td>
+<td><strong>B</strong></td>
+<td>Four mutations exist: chat send (<code>ChatPage.tsx</code>), document upload (<code>DocumentsPage.tsx</code>), executive briefing generation, and action approve/reject (both in <code>WorkflowsPage.tsx</code>) — there is no auth flow in this app.</td>
+</tr>
+<tr>
+<td>D6</td>
+<td><strong>B</strong></td>
+<td>The chat mutation’s <code>onSuccess</code> updates local state (<code>conversationId.current</code>, appended message, <code>activeResponse</code>) — it never calls <code>invalidateQueries</code>, since chat isn’t backed by a cached query.</td>
+</tr>
+<tr>
+<td>D7</td>
+<td><strong>B</strong></td>
+<td><code>ChatPage.tsx:20</code> stores <code>conversationId</code> in a <code>useRef</code>, deliberately avoiding <code>useState</code> since changing it shouldn’t force a re-render on its own.</td>
+</tr>
+<tr>
+<td>D8</td>
+<td><strong>B</strong></td>
+<td><code>useEffect</code> is not used anywhere in the frontend; chat scrolling relies on CSS <code>overflow-y-auto</code> rather than a scroll-effect hook.</td>
+</tr>
+<tr>
+<td>D9</td>
+<td><strong>B</strong></td>
+<td>There’s no Context API, Redux, or Zustand usage — local UI state is plain <code>useState</code>, and all server state is cached by React Query.</td>
+</tr>
+<tr>
+<td>D10</td>
+<td><strong>B</strong></td>
+<td><code>react-router-dom</code>’s <code>BrowserRouter</code>/<code>Routes</code> (wired in <code>main.tsx</code>/<code>App.tsx</code>) define <code>/</code>, <code>/customers</code>, <code>/documents</code>, and <code>/workflows</code>.</td>
+</tr>
+<tr>
+<td>D11</td>
+<td><strong>B</strong></td>
+<td>Styling is Tailwind CSS utility classes with a custom <code>brand</code> color — no MUI, shadcn, or styled-components dependency exists.</td>
+</tr>
+<tr>
+<td>D12</td>
+<td><strong>B</strong></td>
+<td>No files with a <code>use*</code> custom-hook naming pattern exist; every page calls <code>useQuery</code>/<code>useMutation</code>/<code>useState</code>/<code>useRef</code> directly.</td>
+</tr>
+<tr>
+<td>D13</td>
+<td><strong>B</strong></td>
+<td>All shared interfaces (<code>ChatResponse</code>, <code>Customer</code>, <code>RecommendedAction</code>, etc.) live in one <code>src/types.ts</code>, imported by both the API client and page components.</td>
+</tr>
+<tr>
+<td>D14</td>
+<td><strong>B</strong></td>
+<td><code>AgentActivityPanel.tsx</code> is purely presentational — no hooks — rendering <code>steps</code>/<code>toolCalls</code>/<code>sources</code> passed down as props from the parent’s <code>ChatResponse</code> state.</td>
+</tr>
+<tr>
+<td>D15</td>
+<td><strong>B</strong></td>
+<td>The upload mutation’s <code>onSuccess</code> clears the file input via a ref and invalidates <code>[&quot;documents&quot;]</code> in the same callback — no full remount or page reload is involved.</td>
+</tr>
+</tbody>
+</table>
+
+</body>
+</html>

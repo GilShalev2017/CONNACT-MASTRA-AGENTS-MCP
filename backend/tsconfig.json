@@ -14,6 +14,7 @@
     "rootDir": "src",
     "baseUrl": "./",
     "incremental": true,
+    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo",
     "strict": false,
     "strictNullChecks": true,
     "noImplicitAny": false,
