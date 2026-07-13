@@ -1,7 +1,10 @@
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { ChatMessage } from "../types";
 
 export default function ChatMessageBubble({ message, onViewActivity }: { message: ChatMessage; onViewActivity: () => void }) {
   const isUser = message.role === "user";
+
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
       <div
@@ -9,7 +12,14 @@ export default function ChatMessageBubble({ message, onViewActivity }: { message
           isUser ? "bg-brand-600 text-white" : "border border-slate-800 bg-slate-950 text-slate-100"
         }`}
       >
-        <div className="whitespace-pre-wrap">{message.text}</div>
+        {isUser ? (
+          <div className="whitespace-pre-wrap">{message.text}</div>
+        ) : (
+          <div className="prose prose-invert max-w-none prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-1 prose-headings:mt-3 prose-headings:mb-2 prose-strong:text-white">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.text}</ReactMarkdown>
+          </div>
+        )}
+
         {!isUser && message.response && (
           <button
             onClick={onViewActivity}

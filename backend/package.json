@@ -8,6 +8,7 @@
     "build": "nest build",
     "start": "node dist/main.js",
     "start:dev": "nest start --watch",
+    "start:debug": "nest start --watch --debug",
     "seed": "node dist/seed/seed.js"
   },
   "dependencies": {

@@ -11,14 +11,14 @@ import { McpClientService } from "../../mcp/mcp-client.service.js";
 export function createCrmTools(mcpClient: McpClientService) {
   const getCustomer = createTool({
     id: "getCustomer",
-    description: "Fetch a single customer's full CRM profile by customerId (industry, cloud, spend, challenges, opportunities).",
+    description: "Fetch a single customer's full CRM profile by customerId (industry, cloud, spend, challenges, opportunities). Use this when the user explicitly asks for account profile, spend, cloud context, or opportunities; do not use it as a follow-up to a history-only question.",
     inputSchema: z.object({ customerId: z.string() }),
     execute: async ({ context }) => mcpClient.callTool("getCustomer", { customerId: context.customerId }),
   });
 
   const getCustomerHistory = createTool({
     id: "getCustomerHistory",
-    description: "Fetch a customer's meeting history, including transcripts, summaries, sentiment, action items, and risks.",
+    description: "Fetch a customer's meeting history, including transcripts, summaries, sentiment, action items, and risks. Prefer this for questions about past meetings, discussions, or conversation summaries.",
     inputSchema: z.object({ customerId: z.string() }),
     execute: async ({ context }) => mcpClient.callTool("getCustomerHistory", { customerId: context.customerId }),
   });
@@ -39,7 +39,7 @@ export function createCrmTools(mcpClient: McpClientService) {
 
   const listCustomers = createTool({
     id: "listCustomers",
-    description: "List all customers with id, name, industry, and current cloud provider. Use to discover valid customerId values.",
+    description: "List all customers with id, name, industry, and current cloud provider. Only use when the user asks for a customer inventory, portfolio overview, or needs help discovering valid customerIds; do not use it when a specific customer is already named.",
     inputSchema: z.object({}),
     execute: async () => mcpClient.callTool("listCustomers", {}),
   });

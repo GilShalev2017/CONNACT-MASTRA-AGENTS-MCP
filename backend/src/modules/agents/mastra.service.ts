@@ -52,6 +52,7 @@ export class MastraService implements OnModuleInit {
   private readonly logger = new Logger(MastraService.name);
   private mastra!: Mastra;
   private cloudPartnershipAgent!: Agent;
+  private historySummarizerAgent!: Agent;
   private meetingAnalysisAgent!: Agent;
   private executiveBriefingAgent!: Agent;
 
@@ -73,6 +74,13 @@ export class MastraService implements OnModuleInit {
       instructions: CLOUD_PARTNERSHIP_AGENT_INSTRUCTIONS,
       model,
       tools: { searchKnowledgeBase, ...crmTools },
+    });
+
+    this.historySummarizerAgent = new Agent({
+      name: "HistorySummarizerAgent",
+      instructions:
+        "You answer questions from structured CRM meeting-history data. Use only the provided data. Do not call any tools or invent details.",
+      model,
     });
 
     this.meetingAnalysisAgent = new Agent({
@@ -115,17 +123,31 @@ export class MastraService implements OnModuleInit {
     const convId = conversationId ?? randomUUID();
     const startedAt = Date.now();
 
-    const result = await this.cloudPartnershipAgent.generate(message, { maxSteps: 5 });
+    const directHistoryReply = await this.tryHandleHistoryRequest(message, convId, startedAt);
+    if (directHistoryReply) {
+      return directHistoryReply;
+    }
+
+    const customerHint = this.buildCustomerToolSelectionHint(message);
+    const prompt = customerHint ? `${customerHint}\n\nUser question: ${message}` : message;
+    const result = await this.cloudPartnershipAgent.generate(prompt, { maxSteps: 5 });
 
     const toolCalls: AgentToolCallTrace[] = [];
     const sources: RagSearchResult[] = [];
 
-    const toolResults = ((result as any).toolResults ?? []) as Array<{
-      toolCallId: string;
-      toolName: string;
-      args: Record<string, unknown>;
-      result: unknown;
+    // `result.toolResults` only reflects the *last* step of a multi-step
+    // run - when the final step is pure text synthesis (no new tool
+    // calls), it's empty even though earlier steps called tools. Collect
+    // from every step instead.
+    const rawSteps = ((result as any).steps ?? []) as Array<{
+      toolResults?: Array<{
+        toolCallId: string;
+        toolName: string;
+        args: Record<string, unknown>;
+        result: unknown;
+      }>;
     }>;
+    const toolResults = rawSteps.flatMap((step) => step.toolResults ?? []);
 
     for (const tr of toolResults) {
       const resultSummary = this.summarizeToolResult(tr.toolName, tr.result);
@@ -172,6 +194,106 @@ export class MastraService implements OnModuleInit {
       toolCalls,
       steps,
     };
+  }
+
+  private async tryHandleHistoryRequest(message: string, conversationId: string, startedAt: number): Promise<ChatResponse | null> {
+    const normalized = message.toLowerCase();
+    const asksForHistory = /(meeting|meetings|history|transcript|transcripts|discussion|discussions|call|calls|conversation|conversations|summarize.*meeting|latest discussion)/i.test(message);
+    const customerId = this.extractCustomerId(message);
+
+    if (!asksForHistory || !customerId) {
+      return null;
+    }
+
+    const historyResult = await this.mcpClient.callTool("getCustomerHistory", { customerId });
+    const answerPrompt = [
+      `User question: ${message}`,
+      `Customer ID: ${customerId}`,
+      "CRM meeting history:",
+      JSON.stringify(historyResult, null, 2),
+      "Answer the user's question concisely using only the provided meeting-history data. Do not call tools or invent facts.",
+    ].join("\n\n");
+
+    const result = await this.historySummarizerAgent.generate(answerPrompt, { maxSteps: 1 });
+
+    return {
+      conversationId,
+      answer: result.text,
+      sources: [],
+      toolCalls: [
+        {
+          tool: "getCustomerHistory",
+          args: { customerId },
+          resultSummary: this.summarizeToolResult("getCustomerHistory", historyResult),
+          durationMs: 0,
+        },
+      ],
+      steps: [
+        { label: "Understood question", detail: "Matched the request to a customer-history lookup." },
+        { label: "Executed tool: getCustomerHistory", detail: this.summarizeToolResult("getCustomerHistory", historyResult) },
+        {
+          label: "Synthesized answer",
+          detail: `Generated a grounded response in ${Date.now() - startedAt}ms using 1 tool call(s).`,
+        },
+      ],
+    };
+  }
+
+  private extractCustomerId(message: string): string | null {
+    const customerIdMatch = message.match(/\b(cust-[a-z0-9-]+)\b/i);
+    if (customerIdMatch) return customerIdMatch[1];
+
+    const customerNames = [
+      { name: "acme manufacturing", customerId: "cust-acme-mfg" },
+      { name: "northwind retail group", customerId: "cust-northwind-retail" },
+      { name: "heliocare health systems", customerId: "cust-heliocare-health" },
+      { name: "fintrust regional bank", customerId: "cust-fintrust-bank" },
+      { name: "summit logistics", customerId: "cust-summit-logistics" },
+      { name: "brightwave media", customerId: "cust-brightwave-media" },
+    ];
+
+    const normalized = message.toLowerCase();
+    const match = customerNames.find(({ name }) => normalized.includes(name));
+    return match?.customerId ?? null;
+  }
+
+  private buildCustomerToolSelectionHint(message: string): string | null {
+    const normalized = message.toLowerCase();
+    const asksForHistory = /(meeting|meetings|history|transcript|transcripts|discussion|discussions|call|calls|conversation|conversations|summarize.*meeting|latest discussion)/i.test(message);
+    const asksForProfile = /(profile|account|industry|cloud|spend|opportunities|challenges|health score|owner|migration interest|current cloud)/i.test(message);
+
+    if (asksForHistory && !asksForProfile) {
+      return "The user is asking about meeting history or past discussions. Prefer getCustomerHistory only and avoid a follow-up customer profile lookup unless the prompt explicitly asks for account profile, spend, cloud usage, or opportunities.";
+    }
+
+    const customerMatches = [
+      { name: "acme manufacturing", customerId: "cust-acme-mfg" },
+      { name: "northwind retail group", customerId: "cust-northwind-retail" },
+      { name: "heliocare health systems", customerId: "cust-heliocare-health" },
+      { name: "fintrust regional bank", customerId: "cust-fintrust-bank" },
+      { name: "summit logistics", customerId: "cust-summit-logistics" },
+      { name: "brightwave media", customerId: "cust-brightwave-media" },
+    ].filter(({ name }) => normalized.includes(name));
+
+    if (customerMatches.length > 0) {
+      const match = customerMatches[0];
+      return [
+        `The user explicitly mentioned customer "${match.name}" (customerId: ${match.customerId}).`,
+        "For this request, do not call listCustomers.",
+        "Use the customer-specific CRM tools instead: getCustomer, getCustomerHistory, or getCustomerCloudUsage.",
+      ].join(" ");
+    }
+
+    const customerIdMatch = message.match(/\b(cust-[a-z0-9-]+)\b/i);
+    if (customerIdMatch) {
+      return [
+        `The user explicitly mentioned customerId "${customerIdMatch[1]}".`,
+        "For this request, do not call listCustomers.",
+        "Use the customer-specific CRM tools instead: getCustomer, getCustomerHistory, or getCustomerCloudUsage.",
+      ].join(" ");
+    }
+
+    return null;
   }
 
   private summarizeToolResult(toolName: string, result: unknown): string {
