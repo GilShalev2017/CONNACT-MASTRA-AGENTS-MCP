@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tool Routing Matrix for CloudPartnershipAgent</title>
+  <style>
+  @import url("https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.9.0-alpha2/katex.min.css");
+
+  body {
+    font-family: Georgia, Cambria, serif;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #373D49;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: "Source Sans Pro", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: 600;
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+  }
+  h1 { font-size: 2em; }
+  h2 { font-size: 1.5em; }
+  h3 { font-size: 1.25em; }
+  a { color: #35D7BB; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code {
+    font-family: "Ubuntu Mono", Monaco, monospace;
+    background: #F5F7FA;
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+  }
+  pre {
+    background: #F5F7FA;
+    padding: 1em;
+    border-radius: 3px;
+    overflow-x: auto;
+  }
+  .hljs {
+    display: block;
+    overflow-x: auto;
+    padding: 0;
+    color: #333;
+  }
+  pre code { background: none; padding: 0; }
+  blockquote {
+    border-left: 3px solid #A0AABF;
+    padding-left: 1em;
+    margin-left: 0;
+    font-style: italic;
+    color: #666;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+  th, td {
+    border: 1px solid #E8E8E8;
+    padding: 0.5em;
+    text-align: left;
+  }
+  th {
+    background: #F5F7FA;
+    font-weight: 600;
+  }
+  #preview .table {
+    width: auto;
+  }
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+  .katex-display {
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+</style>
+</head>
+<body id="preview">
+<h1 class="code-line has-line-data" data-line-start="0" data-line-end="1"><a id="Agent_Tool_Routing_Matrix_0"></a>Agent Tool Routing Matrix</h1>
+<h2 class="code-line has-line-data" data-line-start="2" data-line-end="3"><a id="Purpose_2"></a>Purpose</h2>
+<p class="has-line-data" data-line-start="3" data-line-end="4">This matrix defines when the solution should use CRM tools versus RAG semantic search, and which agent should handle each request.</p>
+<h2 class="code-line has-line-data" data-line-start="5" data-line-end="6"><a id="Core_routing_rules_5"></a>Core routing rules</h2>
+<ul>
+<li class="has-line-data" data-line-start="6" data-line-end="7">Use CRM tools for specific customer lookups, customer history, customer profile data, spend, cloud usage, and portfolio prioritization.</li>
+<li class="has-line-data" data-line-start="7" data-line-end="8">Use RAG semantic search when the answer needs migration guidance, architecture reasoning, security/compliance guidance, FinOps context, or playbook-style explanation.</li>
+<li class="has-line-data" data-line-start="8" data-line-end="9">Avoid redundant CRM calls. For history-style questions, prefer the meeting-history tool only unless the prompt explicitly asks for profile or spend context.</li>
+<li class="has-line-data" data-line-start="9" data-line-end="11">Use the specialist agents for their intended workloads rather than forcing every request through the general chat agent.</li>
+</ul>
+<h2 class="code-line has-line-data" data-line-start="11" data-line-end="12"><a id="Tool_routing_matrix_11"></a>Tool routing matrix</h2>
+<table class="table table-striped table-bordered">
+<thead>
+<tr>
+<th>User intent</th>
+<th>Primary agent</th>
+<th>Preferred CRM tool(s)</th>
+<th>RAG semantic search needed?</th>
+<th>Why / reasoning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Portfolio prioritization: “which customers should we prioritize?”</td>
+<td>CloudPartnershipAgent</td>
+<td>getMigrationOpportunities</td>
+<td>Yes</td>
+<td>CRM identifies the candidate accounts; RAG adds migration-fit reasoning, architecture guidance, and next-step recommendations.</td>
+</tr>
+<tr>
+<td>Specific customer profile: account, industry, cloud, spend, health, owner</td>
+<td>CloudPartnershipAgent</td>
+<td>getCustomer or getCustomerCloudUsage</td>
+<td>Optional</td>
+<td>The answer is grounded in the customer record; RAG is only needed if the user wants best-practice context.</td>
+</tr>
+<tr>
+<td>Specific customer history: meetings, discussions, transcripts, latest call</td>
+<td>historySummarizerAgent</td>
+<td>getCustomerHistory</td>
+<td>No</td>
+<td>This is a direct history retrieval and summarization task and should not trigger unrelated profile lookups.</td>
+</tr>
+<tr>
+<td>Customer blockers / technical concerns</td>
+<td>CloudPartnershipAgent</td>
+<td>getCustomerHistory + getCustomer or getCustomerCloudUsage</td>
+<td>Yes, if the user wants architectural or migration guidance</td>
+<td>The blocker is in CRM/customer context; RAG supplies external explanation and playbook context.</td>
+</tr>
+<tr>
+<td>Portfolio overview / discover valid customer IDs</td>
+<td>CloudPartnershipAgent</td>
+<td>listCustomers</td>
+<td>No</td>
+<td>This is a discovery/listing task, not a specific-account lookup.</td>
+</tr>
+<tr>
+<td>Executive briefing creation</td>
+<td>executiveBriefingAgent</td>
+<td>CRM context from the workflow</td>
+<td>Yes</td>
+<td>This agent is for reporting-style outputs that synthesize CRM context plus knowledge-base evidence.</td>
+</tr>
+<tr>
+<td>Raw transcript analysis</td>
+<td>meetingAnalysisAgent</td>
+<td>None</td>
+<td>No</td>
+<td>This agent is for structured transcript analysis, not CRM tool routing.</td>
+</tr>
+</tbody>
+</table>
+<h2 class="code-line has-line-data" data-line-start="23" data-line-end="24"><a id="Example_mappings_from_the_current_UI_23"></a>Example mappings from the current UI</h2>
+<table class="table table-striped table-bordered">
+<thead>
+<tr>
+<th>Example prompt</th>
+<th>Primary agent</th>
+<th>CRM tool(s)</th>
+<th>RAG semantic search</th>
+<th>Reasoning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>“Which customers are good candidates for Azure migration?”</td>
+<td>CloudPartnershipAgent</td>
+<td>getMigrationOpportunities</td>
+<td>Yes</td>
+<td>CRM finds the relevant customers; RAG explains why they are strong migration candidates.</td>
+</tr>
+<tr>
+<td>“What technical blockers were mentioned by Acme Manufacturing?”</td>
+<td>CloudPartnershipAgent</td>
+<td>getCustomerHistory</td>
+<td>Optional</td>
+<td>The blockers are likely captured in meeting history; RAG helps explain how to address them.</td>
+</tr>
+<tr>
+<td>“Summarize the latest discussion with Northwind Retail Group.”</td>
+<td>historySummarizerAgent</td>
+<td>getCustomerHistory</td>
+<td>No</td>
+<td>This is a direct history-summary question.</td>
+</tr>
+<tr>
+<td>“Which customers have cloud optimization opportunities?”</td>
+<td>CloudPartnershipAgent</td>
+<td>getMigrationOpportunities</td>
+<td>Yes</td>
+<td>CRM finds the accounts; RAG adds optimization best-practice context.</td>
+</tr>
+<tr>
+<td>“What’s driving Summit Logistics’ urgency to move off GCP?”</td>
+<td>CloudPartnershipAgent</td>
+<td>getCustomer + getCustomerHistory</td>
+<td>Optional</td>
+<td>The core evidence comes from customer profile and history; RAG adds deeper explanation.</td>
+</tr>
+</tbody>
+</table>
+<h2 class="code-line has-line-data" data-line-start="33" data-line-end="34"><a id="Agent_responsibilities_33"></a>Agent responsibilities</h2>
+<h3 class="code-line has-line-data" data-line-start="35" data-line-end="36"><a id="CloudPartnershipAgent_35"></a>CloudPartnershipAgent</h3>
+<p class="has-line-data" data-line-start="36" data-line-end="37">Used for general customer / portfolio interactions, CRM lookups, and mixed CRM + RAG questions.</p>
+<h3 class="code-line has-line-data" data-line-start="38" data-line-end="39"><a id="historySummarizerAgent_38"></a>historySummarizerAgent</h3>
+<p class="has-line-data" data-line-start="39" data-line-end="40">Used for direct meeting-history and discussion-summary questions based on CRM data only.</p>
+<h3 class="code-line has-line-data" data-line-start="41" data-line-end="42"><a id="meetingAnalysisAgent_41"></a>meetingAnalysisAgent</h3>
+<p class="has-line-data" data-line-start="42" data-line-end="43">Used for structured analysis of raw meeting transcripts, including summaries, sentiment, action items, and risks.</p>
+<h3 class="code-line has-line-data" data-line-start="44" data-line-end="45"><a id="executiveBriefingAgent_44"></a>executiveBriefingAgent</h3>
+<p class="has-line-data" data-line-start="45" data-line-end="46">Used for executive-style summaries and recommendations based on CRM context plus knowledge-base evidence.</p>
+<h2 class="code-line has-line-data" data-line-start="47" data-line-end="48"><a id="Practical_routing_policy_47"></a>Practical routing policy</h2>
+<ul>
+<li class="has-line-data" data-line-start="48" data-line-end="49">Use CloudPartnershipAgent for “which customers”, “what’s driving”, and “what blockers” style prompts.</li>
+<li class="has-line-data" data-line-start="49" data-line-end="50">Use historySummarizerAgent for “summarize the latest discussion / meeting / call” style prompts.</li>
+<li class="has-line-data" data-line-start="50" data-line-end="51">Use meetingAnalysisAgent for transcript analysis workflows.</li>
+<li class="has-line-data" data-line-start="51" data-line-end="52">Use executiveBriefingAgent for briefing and reporting workflows.</li>
+</ul>
+
+</body>
+</html>

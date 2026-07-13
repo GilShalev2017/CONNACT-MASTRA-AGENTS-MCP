@@ -22,6 +22,7 @@ export interface AgentStep {
 export interface ChatResponse {
   conversationId: string;
   answer: string;
+  agentName?: string;
   sources: RagSearchResult[];
   toolCalls: AgentToolCallTrace[];
   steps: AgentStep[];

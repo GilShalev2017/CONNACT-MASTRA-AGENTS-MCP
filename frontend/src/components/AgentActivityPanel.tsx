@@ -19,6 +19,10 @@ export default function AgentActivityPanel({ response }: { response: ChatRespons
   return (
     <div className="flex h-full flex-col gap-6 overflow-y-auto p-4">
       <section>
+        <div className="mb-3 rounded-lg border border-slate-800 bg-slate-950/60 p-3">
+          <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Active agent</div>
+          <div className="mt-1 text-sm font-medium text-slate-100">{response.agentName ?? "CloudPartnershipAgent"}</div>
+        </div>
         <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Reasoning steps</h3>
         <ol className="flex flex-col gap-2">
           {response.steps.map((step, i) => (

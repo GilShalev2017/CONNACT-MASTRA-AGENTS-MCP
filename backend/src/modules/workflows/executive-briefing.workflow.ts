@@ -84,21 +84,53 @@ export function buildExecutiveBriefingWorkflow(deps: {
         "Produce the executive briefing now.",
       ].join("\n\n");
 
-      const result = await deps.briefingAgent.generate(prompt, {
-        output: z.object({
-          executiveSummary: z.string(),
-          keyOpportunities: z.array(z.string()),
-          keyRisks: z.array(z.string()),
-          recommendedActions: z.array(z.object({ action: z.string(), rationale: z.string() })),
-        }),
+      const schema = z.object({
+        executiveSummary: z.string(),
+        keyOpportunities: z.array(z.string()),
+        keyRisks: z.array(z.string()),
+        recommendedActions: z.array(z.object({ action: z.string(), rationale: z.string() })),
       });
-      const object = (result as any).object;
 
-      return {
+      let object: Record<string, unknown> | null = null;
+      let rawText = "";
+
+      try {
+        const result = await deps.briefingAgent.generate(prompt, { output: schema });
+        object = (result as any).object ?? null;
+        rawText = typeof (result as any).text === "string" ? (result as any).text : "";
+      } catch (error) {
+        rawText = error instanceof Error ? error.message : String(error);
+        console.error("[executive-briefing] structured generation failed", error);
+      }
+
+      const baseBriefing = {
         customerId: inputData.customerId,
         customerName: customer.name ?? inputData.customerId,
         generatedAt: new Date().toISOString(),
-        ...object,
+        executiveSummary: "Executive briefing generation was incomplete. Please review the customer context and try again.",
+        keyOpportunities: [] as string[],
+        keyRisks: [] as string[],
+        recommendedActions: [] as Array<{ action: string; rationale: string }>,
+      };
+
+      if (!object) {
+        if (rawText) {
+          console.error("[executive-briefing] raw model output:", rawText);
+        }
+        return baseBriefing;
+      }
+
+      const parsed = schema.safeParse(object);
+      if (!parsed.success) {
+        if (rawText) {
+          console.error("[executive-briefing] raw model output:", rawText);
+        }
+        return baseBriefing;
+      }
+
+      return {
+        ...baseBriefing,
+        ...parsed.data,
       };
     },
   });

@@ -190,6 +190,7 @@ export class MastraService implements OnModuleInit {
     return {
       conversationId: convId,
       answer: result.text,
+      agentName: this.cloudPartnershipAgent.name,
       sources,
       toolCalls,
       steps,
@@ -219,6 +220,7 @@ export class MastraService implements OnModuleInit {
     return {
       conversationId,
       answer: result.text,
+      agentName: this.historySummarizerAgent.name,
       sources: [],
       toolCalls: [
         {

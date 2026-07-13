@@ -6,10 +6,11 @@
       "type": "node",
       "request": "launch",
       "cwd": "${workspaceFolder}/backend",
-      "program": "${workspaceFolder}/backend/dist/main.js",
+      "program": "${workspaceFolder}/backend/src/main.ts",
       "preLaunchTask": "backend: build",
-      "outFiles": ["${workspaceFolder}/backend/dist/**/*.js"],
+      "outFiles": ["${workspaceFolder}/backend/dist/**/*.js", "${workspaceFolder}/backend/src/**/*.ts"],
       "sourceMaps": true,
+      "runtimeArgs": ["--enable-source-maps"],
       "envFile": "${workspaceFolder}/backend/.env",
       "console": "integratedTerminal",
       "skipFiles": ["<node_internals>/**"]
@@ -23,6 +24,7 @@
       "cwd": "${workspaceFolder}/backend",
       "outFiles": ["${workspaceFolder}/backend/dist/**/*.js"],
       "sourceMaps": true,
+      "runtimeArgs": ["--enable-source-maps"],
       "skipFiles": ["<node_internals>/**"]
     }
   ]
