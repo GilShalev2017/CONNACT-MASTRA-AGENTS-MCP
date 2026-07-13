@@ -77,7 +77,7 @@ export function buildExecutiveBriefingWorkflow(deps: {
     outputSchema: executiveBriefingOutputSchema,
     execute: async ({ inputData }) => {
       const customer = inputData.customer as Record<string, any>;
-      const prompt = [
+      const basePrompt = [
         `Customer CRM profile:\n${JSON.stringify(inputData.customer, null, 2)}`,
         `Meeting history:\n${JSON.stringify(inputData.history, null, 2)}`,
         `Relevant knowledge base excerpts:\n${inputData.knowledgeExcerpts.map((k) => `- (${k.source}) ${k.text}`).join("\n")}`,
@@ -91,18 +91,6 @@ export function buildExecutiveBriefingWorkflow(deps: {
         recommendedActions: z.array(z.object({ action: z.string(), rationale: z.string() })),
       });
 
-      let object: Record<string, unknown> | null = null;
-      let rawText = "";
-
-      try {
-        const result = await deps.briefingAgent.generate(prompt, { output: schema });
-        object = (result as any).object ?? null;
-        rawText = typeof (result as any).text === "string" ? (result as any).text : "";
-      } catch (error) {
-        rawText = error instanceof Error ? error.message : String(error);
-        console.error("[executive-briefing] structured generation failed", error);
-      }
-
       const baseBriefing = {
         customerId: inputData.customerId,
         customerName: customer.name ?? inputData.customerId,
@@ -113,25 +101,39 @@ export function buildExecutiveBriefingWorkflow(deps: {
         recommendedActions: [] as Array<{ action: string; rationale: string }>,
       };
 
-      if (!object) {
-        if (rawText) {
-          console.error("[executive-briefing] raw model output:", rawText);
+      // The model occasionally ignores the tool schema's array types and
+      // stuffs list fields (keyOpportunities, keyRisks, recommendedActions)
+      // into a single XML-tagged string instead, which fails Zod
+      // validation. Feed the validation error back and give it one shot
+      // to self-correct before falling back to the placeholder briefing.
+      let prompt = basePrompt;
+      const maxAttempts = 2;
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+          const result = await deps.briefingAgent.generate(prompt, { output: schema });
+          const object = (result as any).object ?? null;
+          const parsed = object ? schema.safeParse(object) : null;
+
+          if (parsed?.success) {
+            return { ...baseBriefing, ...parsed.data };
+          }
+
+          const issue = parsed && !parsed.success ? parsed.error.message : "no object was returned";
+          console.error(`[executive-briefing] attempt ${attempt} produced an invalid object:`, issue);
+
+          prompt = [
+            basePrompt,
+            `Your previous response did not match the required schema: ${issue}`,
+            'keyOpportunities and keyRisks must each be a JSON array of plain strings - no XML tags, no nesting, no single combined string.',
+            'recommendedActions must be a JSON array of objects, each with exactly two string fields: "action" and "rationale".',
+            "Call the structured output tool again with corrected values matching the schema exactly.",
+          ].join("\n\n");
+        } catch (error) {
+          console.error(`[executive-briefing] attempt ${attempt} failed:`, error);
         }
-        return baseBriefing;
       }
 
-      const parsed = schema.safeParse(object);
-      if (!parsed.success) {
-        if (rawText) {
-          console.error("[executive-briefing] raw model output:", rawText);
-        }
-        return baseBriefing;
-      }
-
-      return {
-        ...baseBriefing,
-        ...parsed.data,
-      };
+      return baseBriefing;
     },
   });
 
