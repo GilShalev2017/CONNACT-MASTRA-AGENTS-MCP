@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NestJS Chaet Sheet</title>
+  <style>
+  @import url("https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.9.0-alpha2/katex.min.css");
+
+  body {
+    font-family: Georgia, Cambria, serif;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #373D49;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: "Source Sans Pro", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: 600;
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+  }
+  h1 { font-size: 2em; }
+  h2 { font-size: 1.5em; }
+  h3 { font-size: 1.25em; }
+  a { color: #35D7BB; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code {
+    font-family: "Ubuntu Mono", Monaco, monospace;
+    background: #F5F7FA;
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+  }
+  pre {
+    background: #F5F7FA;
+    padding: 1em;
+    border-radius: 3px;
+    overflow-x: auto;
+  }
+  .hljs {
+    display: block;
+    overflow-x: auto;
+    padding: 0;
+    color: #333;
+  }
+  pre code { background: none; padding: 0; }
+  blockquote {
+    border-left: 3px solid #A0AABF;
+    padding-left: 1em;
+    margin-left: 0;
+    font-style: italic;
+    color: #666;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+  th, td {
+    border: 1px solid #E8E8E8;
+    padding: 0.5em;
+    text-align: left;
+  }
+  th {
+    background: #F5F7FA;
+    font-weight: 600;
+  }
+  #preview .table {
+    width: auto;
+  }
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+  .katex-display {
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+</style>
+</head>
+<body id="preview">
+<h1 class="code-line has-line-data" data-line-start="0" data-line-end="1"><a id="NestJS_Cheat_Sheet_0"></a>NestJS Cheat Sheet</h1>
+<p class="has-line-data" data-line-start="2" data-line-end="3">Grounded in the actual <code>backend/</code> codebase — every example is real, with file references.</p>
+<hr>
+<h2 class="code-line has-line-data" data-line-start="6" data-line-end="7"><a id="1_Module_Controller_Service_what_sits_between_a_module_and_its_routes_6"></a>1. Module → Controller → Service — what sits between a module and its routes?</h2>
+<p class="has-line-data" data-line-start="8" data-line-end="9">A module never defines routes itself. It’s a <strong>registration/wiring unit</strong>. The chain is:</p>
+<pre><code class="has-line-data" data-line-start="11" data-line-end="13">Module (registers)  →  Controller (declares routes via decorators)  →  Service (does the work)
+</code></pre>
+<pre><code class="has-line-data language-ts" data-line-start="15" data-line-end="23"><span class="hljs-comment">// workflows.module.ts</span>
+<span class="hljs-meta">@Module</span>({
+  <span class="hljs-attr">imports</span>: [<span class="hljs-title class_">McpModule</span>, <span class="hljs-title class_">VectorModule</span>, <span class="hljs-title class_">AgentsModule</span>],
+  <span class="hljs-attr">controllers</span>: [<span class="hljs-title class_">WorkflowsController</span>],   <span class="hljs-comment">// ← gets HTTP routes registered</span>
+  <span class="hljs-attr">providers</span>: [<span class="hljs-title class_">WorkflowsService</span>],        <span class="hljs-comment">// ← becomes injectable within this module&#x27;s scope</span>
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">WorkflowsModule</span> {}
+</code></pre>
+<table class="table table-striped table-bordered">
+<thead>
+<tr>
+<th>Layer</th>
+<th>Job</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>@Module()</code></td>
+<td>DI/registration graph</td>
+<td><code>WorkflowsModule</code></td>
+</tr>
+<tr>
+<td><code>@Controller(prefix)</code></td>
+<td>HTTP surface (routes)</td>
+<td><code>@Controller(&quot;api/workflows&quot;)</code></td>
+</tr>
+<tr>
+<td><code>@Injectable()</code> service</td>
+<td>Business logic</td>
+<td><code>WorkflowsService</code></td>
+</tr>
+</tbody>
+</table>
+<p class="has-line-data" data-line-start="30" data-line-end="31">At bootstrap, Nest scans every controller in the import graph and registers its routes on the underlying HTTP adapter (Express, via <code>@nestjs/platform-express</code>). Controllers get their services via constructor injection — Nest’s DI container is what actually sits “between” the module registration and the running route.</p>
+<hr>
+<h2 class="code-line has-line-data" data-line-start="34" data-line-end="35"><a id="2_Why_AppModule_must_import_every_feature_module_34"></a>2. Why <code>AppModule</code> must import every feature module</h2>
+<p class="has-line-data" data-line-start="36" data-line-end="37"><strong>Nest does zero auto-discovery.</strong> Nothing exists at runtime unless it’s reachable from the root module’s <code>imports</code> graph.</p>
+<pre><code class="has-line-data language-ts" data-line-start="39" data-line-end="47"><span class="hljs-comment">// app.module.ts</span>
+<span class="hljs-attr">imports</span>: [
+  <span class="hljs-title class_">ConfigModule</span>.<span class="hljs-title function_">forRoot</span>({ <span class="hljs-attr">isGlobal</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">load</span>: [configuration] }),
+  <span class="hljs-title class_">MongooseModule</span>.<span class="hljs-title function_">forRootAsync</span>({ ... }),
+  <span class="hljs-title class_">VectorModule</span>, <span class="hljs-title class_">McpModule</span>, <span class="hljs-title class_">DocumentsModule</span>, <span class="hljs-title class_">CustomersModule</span>,
+  <span class="hljs-title class_">AgentsModule</span>, <span class="hljs-title class_">TranscriptionModule</span>, <span class="hljs-title class_">WorkflowsModule</span>,
+],
+</code></pre>
+<p class="has-line-data" data-line-start="48" data-line-end="49"><code>main.ts</code> does <code>NestFactory.create(AppModule)</code> — Nest walks this <code>imports</code> array recursively. Skip a module here → its controllers never get routes, its providers can never be injected anywhere. No error, just silent absence.</p>
+<p class="has-line-data" data-line-start="50" data-line-end="51"><strong>Exports matter too</strong> — a module’s providers are private unless listed in <code>exports</code>:</p>
+<pre><code class="has-line-data language-ts" data-line-start="53" data-line-end="61"><span class="hljs-comment">// agents.module.ts</span>
+<span class="hljs-meta">@Module</span>({
+  <span class="hljs-attr">imports</span>: [<span class="hljs-title class_">VectorModule</span>, <span class="hljs-title class_">McpModule</span>],
+  <span class="hljs-attr">controllers</span>: [<span class="hljs-title class_">AgentsController</span>],
+  <span class="hljs-attr">providers</span>: [<span class="hljs-title class_">MastraService</span>],
+  <span class="hljs-attr">exports</span>: [<span class="hljs-title class_">MastraService</span>],   <span class="hljs-comment">// ← lets OTHER modules inject MastraService</span>
+})
+</code></pre>
+<p class="has-line-data" data-line-start="61" data-line-end="62"><code>WorkflowsModule</code> imports <code>AgentsModule</code> specifically so <code>WorkflowsService</code> can constructor-inject <code>MastraService</code> — one shared agent instance, not a duplicate.</p>
+<hr>
+<h2 class="code-line has-line-data" data-line-start="65" data-line-end="66"><a id="3_Decorator_reference_every_decorator_actually_used_in_this_repo_65"></a>3. Decorator reference (every decorator actually used in this repo)</h2>
+<table class="table table-striped table-bordered">
+<thead>
+<tr>
+<th>Decorator</th>
+<th>Role</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>@Module()</code></td>
+<td>Declares <code>imports</code>/<code>controllers</code>/<code>providers</code>/<code>exports</code></td>
+<td>every <code>*.module.ts</code></td>
+</tr>
+<tr>
+<td><code>@Controller(prefix)</code></td>
+<td>Route prefix for a controller class</td>
+<td><code>@Controller(&quot;api/workflows&quot;)</code></td>
+</tr>
+<tr>
+<td><code>@Get(path?)</code> / <code>@Post(path?)</code></td>
+<td>Maps a method to a verb + path</td>
+<td><code>@Post(&quot;executive-briefing/:customerId&quot;)</code></td>
+</tr>
+<tr>
+<td><code>@Injectable()</code></td>
+<td>Marks a class as a DI-constructable provider</td>
+<td>every <code>*.service.ts</code></td>
+</tr>
+<tr>
+<td><code>@Body()</code> / <code>@Body('field')</code></td>
+<td>Whole parsed body, or one named field</td>
+<td><code>@Body() body: ChatRequestDto</code> / <code>@Body(&quot;decision&quot;)</code></td>
+</tr>
+<tr>
+<td><code>@Param('name')</code></td>
+<td>Named URL path parameter</td>
+<td><code>@Param(&quot;customerId&quot;) customerId: string</code></td>
+</tr>
+<tr>
+<td><code>@UseInterceptors(FileInterceptor(&quot;file&quot;))</code></td>
+<td>Wraps handler with Multer file parsing</td>
+<td><code>document.controller.ts</code></td>
+</tr>
+<tr>
+<td><code>@UploadedFile()</code></td>
+<td>Parsed file object after the interceptor runs</td>
+<td><code>document.controller.ts</code></td>
+</tr>
+<tr>
+<td><code>@InjectModel(Entity.name)</code></td>
+<td>Injects a Mongoose <code>Model&lt;T&gt;</code></td>
+<td><code>customer.service.ts</code></td>
+</tr>
+<tr>
+<td><code>@Schema(options)</code></td>
+<td>Marks a class as a Mongoose schema</td>
+<td><code>@Schema({ collection: &quot;customers&quot; })</code></td>
+</tr>
+<tr>
+<td><code>@Prop(options?)</code></td>
+<td>One field of a <code>@Schema()</code> class</td>
+<td><code>@Prop({ required: true, unique: true })</code></td>
+</tr>
+<tr>
+<td><code>@Catch()</code></td>
+<td>Exception filter — no args = catch-all</td>
+<td><code>LlmErrorFilter</code></td>
+</tr>
+<tr>
+<td><code>@IsString()</code> <code>@MinLength()</code> <code>@IsOptional()</code></td>
+<td><code>class-validator</code> field rules</td>
+<td><code>ChatRequestDto</code></td>
+</tr>
+</tbody>
+</table>
+<p class="has-line-data" data-line-start="83" data-line-end="84"><strong>Not used anywhere in this repo:</strong> <code>@Query()</code>, <code>@Req()</code>/<code>@Res()</code>, <code>@UseGuards()</code>, per-route <code>@UsePipes()</code>, custom <code>@Inject()</code> tokens, custom decorators.</p>
+<p class="has-line-data" data-line-start="85" data-line-end="86"><strong>Not a decorator (common mix-up):</strong> <code>OnModuleInit</code> / <code>OnModuleDestroy</code> are TypeScript interfaces you <code>implements</code>, with a plain <code>onModuleInit()</code> method Nest calls automatically — no <code>@</code> symbol involved.</p>
+<hr>
+<h2 class="code-line has-line-data" data-line-start="89" data-line-end="90"><a id="4_Global_Pipes_vs_Global_Filters_89"></a>4. Global Pipes vs. Global Filters</h2>
+<table class="table table-striped table-bordered">
+<thead>
+<tr>
+<th></th>
+<th>Pipes</th>
+<th>Filters</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Direction</td>
+<td><strong>Incoming</strong> request data</td>
+<td><strong>Outgoing</strong> errors/exceptions</td>
+</tr>
+<tr>
+<td>Purpose</td>
+<td>Transform/validate before the handler runs</td>
+<td>Decide the HTTP response for a thrown error</td>
+</tr>
+<tr>
+<td>This project’s example</td>
+<td><code>ValidationPipe</code></td>
+<td><code>LlmErrorFilter</code></td>
+</tr>
+</tbody>
+</table>
+<p class="has-line-data" data-line-start="97" data-line-end="98"><strong>Pipe</strong> — registered once, applies to every request:</p>
+<pre><code class="has-line-data language-ts" data-line-start="99" data-line-end="102"><span class="hljs-comment">// main.ts</span>
+app.<span class="hljs-title function_">useGlobalPipes</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">ValidationPipe</span>({ <span class="hljs-attr">whitelist</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">transform</span>: <span class="hljs-literal">true</span> }));
+</code></pre>
+<p class="has-line-data" data-line-start="102" data-line-end="103">Runs <code>class-validator</code> decorators on any typed DTO param (e.g. <code>ChatRequestDto</code>) and 400s before the controller method executes if invalid. <code>whitelist: true</code> strips undeclared extra properties.</p>
+<p class="has-line-data" data-line-start="104" data-line-end="105"><strong>Filter</strong> — registered once, catches everything:</p>
+<pre><code class="has-line-data language-ts" data-line-start="106" data-line-end="109"><span class="hljs-comment">// main.ts</span>
+app.<span class="hljs-title function_">useGlobalFilters</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">LlmErrorFilter</span>());
+</code></pre>
+<pre><code class="has-line-data language-ts" data-line-start="110" data-line-end="119"><span class="hljs-meta">@Catch</span>()  <span class="hljs-comment">// no args = catches every exception</span>
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">LlmErrorFilter</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">ExceptionFilter</span> {
+  <span class="hljs-keyword">catch</span>(<span class="hljs-attr">exception</span>: <span class="hljs-built_in">unknown</span>, <span class="hljs-attr">host</span>: <span class="hljs-title class_">ArgumentsHost</span>) {
+    <span class="hljs-comment">// 1. HttpException (404s, BadRequestException, etc.) → pass through unchanged</span>
+    <span class="hljs-comment">// 2. message matches /api[-_]?key/i → 503 with an actionable &quot;set ANTHROPIC_API_KEY&quot; message</span>
+    <span class="hljs-comment">// 3. anything else → generic 500</span>
+  }
+}
+</code></pre>
+<p class="has-line-data" data-line-start="119" data-line-end="120">Mental model: <strong>pipes guard the front door, filters guard the back door.</strong></p>
+<hr>
+<h2 class="code-line has-line-data" data-line-start="123" data-line-end="124"><a id="5_Validation_types_three_separate_systems_three_different_boundaries_123"></a>5. Validation types — three separate systems, three different boundaries</h2>
+<table class="table table-striped table-bordered">
+<thead>
+<tr>
+<th>System</th>
+<th>Boundary it guards</th>
+<th>Where</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>class-validator</code> + <code>ValidationPipe</code></td>
+<td>HTTP request body</td>
+<td><code>ChatRequestDto</code></td>
+</tr>
+<tr>
+<td>Zod schemas</td>
+<td>LLM tool-call args / structured output</td>
+<td><code>mastra.service.ts</code>, <code>mcp-server/src/server.ts</code></td>
+</tr>
+<tr>
+<td>Inline manual <code>if</code></td>
+<td>Ad-hoc, no schema at all</td>
+<td><code>WorkflowsController</code></td>
+</tr>
+</tbody>
+</table>
+<p class="has-line-data" data-line-start="131" data-line-end="132"><strong>a) <code>class-validator</code></strong> — the only DTO in the backend:</p>
+<pre><code class="has-line-data language-ts" data-line-start="133" data-line-end="143"><span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">ChatRequestDto</span> {
+  <span class="hljs-meta">@IsString</span>()
+  <span class="hljs-meta">@MinLength</span>(<span class="hljs-number">1</span>)
+  message!: <span class="hljs-built_in">string</span>;
+
+  <span class="hljs-meta">@IsOptional</span>()
+  <span class="hljs-meta">@IsString</span>()
+  <span class="hljs-attr">conversationId</span>?: <span class="hljs-built_in">string</span>;
+}
+</code></pre>
+<p class="has-line-data" data-line-start="144" data-line-end="145"><strong>b) Zod</strong> — a completely different boundary (LLM in/out, not HTTP):</p>
+<ul>
+<li class="has-line-data" data-line-start="145" data-line-end="146">Tool input schemas (MCP server): <code>{ customerId: z.string().describe(...) }</code></li>
+<li class="has-line-data" data-line-start="146" data-line-end="148">Structured output schemas (Mastra <code>.generate()</code>): <code>{ output: meetingAnalysisOutputSchema }</code></li>
+</ul>
+<p class="has-line-data" data-line-start="148" data-line-end="149"><strong>c) Inline check</strong> — no DTO, no Zod:</p>
+<pre><code class="has-line-data language-ts" data-line-start="150" data-line-end="155"><span class="hljs-comment">// workflows.controller.ts</span>
+<span class="hljs-keyword">if</span> (decision !== <span class="hljs-string">&quot;approved&quot;</span> &amp;&amp; decision !== <span class="hljs-string">&quot;rejected&quot;</span>) {
+  <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">BadRequestException</span>(<span class="hljs-string">&quot;decision must be &#x27;approved&#x27; or &#x27;rejected&#x27;&quot;</span>);
+}
+</code></pre>
+<p class="has-line-data" data-line-start="156" data-line-end="157"><strong>Rule of thumb:</strong> <code>class-validator</code> validates what a <em>human/browser</em> sends in; Zod validates what the <em>LLM</em> is allowed to send/produce. They never validate the same data.</p>
+<hr>
+<h2 class="code-line has-line-data" data-line-start="160" data-line-end="161"><a id="6_Injected_Mongoose_models_schema_or_actual_data_160"></a>6. Injected Mongoose models — schema, or actual data?</h2>
+<p class="has-line-data" data-line-start="162" data-line-end="163"><code>@InjectModel(Entity.name)</code> gives you a live <strong><code>Model&lt;T&gt;</code> query handle</strong>, not a static schema and not pre-loaded data. Nothing is fetched until you call a method on it.</p>
+<pre><code class="has-line-data language-ts" data-line-start="165" data-line-end="174"><span class="hljs-title function_">constructor</span>(<span class="hljs-params"><span class="hljs-meta">@InjectModel</span>(CustomerEntity.name) <span class="hljs-keyword">private</span> <span class="hljs-keyword">readonly</span> <span class="hljs-attr">customerModel</span>: <span class="hljs-title class_">Model</span>&lt;<span class="hljs-title class_">CustomerRecord</span>&gt;</span>) {}
+
+<span class="hljs-keyword">async</span> <span class="hljs-title function_">list</span>(<span class="hljs-params"></span>) {
+  <span class="hljs-keyword">return</span> <span class="hljs-variable language_">this</span>.<span class="hljs-property">customerModel</span>.<span class="hljs-title function_">find</span>().<span class="hljs-title function_">sort</span>({ <span class="hljs-attr">name</span>: <span class="hljs-number">1</span> }).<span class="hljs-title function_">lean</span>();      <span class="hljs-comment">// read: no input, returns docs</span>
+}
+<span class="hljs-keyword">async</span> <span class="hljs-title function_">findById</span>(<span class="hljs-params"><span class="hljs-attr">customerId</span>: <span class="hljs-built_in">string</span></span>) {
+  <span class="hljs-keyword">return</span> <span class="hljs-variable language_">this</span>.<span class="hljs-property">customerModel</span>.<span class="hljs-title function_">findOne</span>({ customerId }).<span class="hljs-title function_">lean</span>();       <span class="hljs-comment">// read: filter only</span>
+}
+</code></pre>
+<pre><code class="has-line-data language-ts" data-line-start="176" data-line-end="181"><span class="hljs-comment">// document.service.ts — a write path</span>
+<span class="hljs-keyword">await</span> <span class="hljs-variable language_">this</span>.<span class="hljs-property">documentModel</span>.<span class="hljs-title function_">create</span>({
+  documentId, filename, documentType, customerId, source, chunkCount, sizeBytes,
+});                                                                 <span class="hljs-comment">// write: full data object</span>
+</code></pre>
+<p class="has-line-data" data-line-start="182" data-line-end="183"><strong>It does not depend on GET vs POST at the framework level</strong> — the injected model object is identical either way. What differs is <strong>which Mongoose method you call</strong>:</p>
+<table class="table table-striped table-bordered">
+<thead>
+<tr>
+<th>Operation</th>
+<th>Method</th>
+<th>Input</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Read (<code>GET</code>)</td>
+<td><code>.find()</code> / <code>.findOne()</code></td>
+<td>filter query, no data payload</td>
+<td>hydrated document(s)</td>
+</tr>
+<tr>
+<td>Write (<code>POST</code>)</td>
+<td><code>.create()</code> / <code>.updateOne()</code></td>
+<td>full data object matching <code>@Prop()</code> shape</td>
+<td>the written/updated doc</td>
+</tr>
+</tbody>
+</table>
+<p class="has-line-data" data-line-start="189" data-line-end="190">The <code>@Schema()</code>/<code>@Prop()</code> decorators only define <strong>shape + constraints</strong> (e.g. <code>required: true</code>, <code>unique: true</code>); the injected <code>Model</code> is the runtime CRUD tool against that shape.</p>
+<p class="has-line-data" data-line-start="191" data-line-end="192">One codebase-specific convention worth noting: <code>CustomerEntity</code>’s own doc comment marks that model as deliberately <strong>read-only</strong> — <em>“the AI agent never queries this directly, it goes through the CRM MCP server… so the same business logic and access boundary applies whether a human or the agent is asking.”</em> <code>Model&lt;T&gt;</code> technically supports writes, but this particular model is only ever called with <code>find()</code>/<code>findOne()</code> in practice — a codebase discipline, not a language restriction.</p>
+<hr>
+<h2 class="code-line has-line-data" data-line-start="195" data-line-end="196"><a id="7_Mongoose_glue_functions_forRoot_vs_forFeature_vs_SchemaFactory_195"></a>7. Mongoose glue functions — <code>forRoot</code> vs <code>forFeature</code> vs <code>SchemaFactory</code></h2>
+<p class="has-line-data" data-line-start="197" data-line-end="198">Three distinct jobs, easy to conflate because they all live under <code>@nestjs/mongoose</code>:</p>
+<table class="table table-striped table-bordered">
+<thead>
+<tr>
+<th>Function</th>
+<th>Job</th>
+<th>Cardinality</th>
+<th>Where in this repo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>MongooseModule.forRootAsync({...})</code></td>
+<td>Opens the <strong>one</strong> actual database connection for the whole app</td>
+<td>Called <strong>once</strong>, in the root module</td>
+<td><code>app.module.ts</code></td>
+</tr>
+<tr>
+<td><code>MongooseModule.forFeature([...])</code></td>
+<td>Registers <strong>which schemas</strong> a given feature module is allowed to inject models for</td>
+<td>Called <strong>once per feature module</strong></td>
+<td><code>customers.module.ts</code>, <code>documents.module.ts</code>, <code>transcription.module.ts</code></td>
+</tr>
+<tr>
+<td><code>SchemaFactory.createForClass(Entity)</code></td>
+<td>Converts a <code>@Schema()</code>/<code>@Prop()</code>-decorated <strong>class</strong> into an actual Mongoose <code>Schema</code> object</td>
+<td>Called <strong>once per entity</strong>, in the schema file itself</td>
+<td><code>customer.schema.ts</code></td>
+</tr>
+</tbody>
+</table>
+<p class="has-line-data" data-line-start="205" data-line-end="206"><strong><code>forRootAsync</code> — the connection</strong> (<code>app.module.ts</code>):</p>
+<pre><code class="has-line-data language-ts" data-line-start="207" data-line-end="212"><span class="hljs-title class_">MongooseModule</span>.<span class="hljs-title function_">forRootAsync</span>({
+  <span class="hljs-attr">inject</span>: [<span class="hljs-title class_">ConfigService</span>],
+  <span class="hljs-attr">useFactory</span>: <span class="hljs-function">(<span class="hljs-params"><span class="hljs-attr">config</span>: <span class="hljs-title class_">ConfigService</span></span>) =&gt;</span> ({ <span class="hljs-attr">uri</span>: config.<span class="hljs-property">get</span>&lt;<span class="hljs-built_in">string</span>&gt;(<span class="hljs-string">&quot;mongoUrl&quot;</span>) }),
+}),
+</code></pre>
+<ul>
+<li class="has-line-data" data-line-start="212" data-line-end="213">“Async” because the Mongo URI comes from <code>ConfigService</code>, which itself needs to be resolved through DI first — <code>inject</code> lists what the factory function needs, <code>useFactory</code> is the function Nest calls with those resolved dependencies to produce the actual connection options.</li>
+<li class="has-line-data" data-line-start="213" data-line-end="215">This establishes the physical <code>mongodb://...</code> connection. It happens <strong>exactly once</strong>, in <code>AppModule</code>. Feature modules never open their own connections.</li>
+</ul>
+<p class="has-line-data" data-line-start="215" data-line-end="216"><strong><code>forFeature</code> — the per-module schema registration</strong> (e.g. <code>customers.module.ts</code>):</p>
+<pre><code class="has-line-data language-ts" data-line-start="217" data-line-end="219"><span class="hljs-title class_">MongooseModule</span>.<span class="hljs-title function_">forFeature</span>([{ <span class="hljs-attr">name</span>: <span class="hljs-title class_">CustomerEntity</span>.<span class="hljs-property">name</span>, <span class="hljs-attr">schema</span>: <span class="hljs-title class_">CustomerSchema</span> }]),
+</code></pre>
+<ul>
+<li class="has-line-data" data-line-start="219" data-line-end="220">This does <em>not</em> open a new connection — it reuses the one from <code>forRootAsync</code>.</li>
+<li class="has-line-data" data-line-start="220" data-line-end="221">It tells Nest’s DI container: “within this module, <code>@InjectModel(CustomerEntity.name)</code> should resolve to a <code>Model</code> bound to the <code>CustomerSchema</code>.” Without this line in <code>CustomersModule</code>, <code>@InjectModel(CustomerEntity.name)</code> in <code>CustomerService</code> would fail to resolve.</li>
+<li class="has-line-data" data-line-start="221" data-line-end="223">Each feature module registers only the schema(s) it needs — <code>DocumentsModule</code> registers <code>DocumentEntity</code>, <code>TranscriptionModule</code> registers <code>MeetingEntity</code>, etc. This keeps the DI graph scoped: a module can’t accidentally inject a model it never declared.</li>
+</ul>
+<p class="has-line-data" data-line-start="223" data-line-end="224"><strong><code>SchemaFactory.createForClass</code> — class → schema</strong> (<code>customer.schema.ts</code>):</p>
+<pre><code class="has-line-data language-ts" data-line-start="225" data-line-end="234"><span class="hljs-meta">@Schema</span>({ <span class="hljs-attr">collection</span>: <span class="hljs-string">&quot;customers&quot;</span> })
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">CustomerEntity</span> {
+  <span class="hljs-meta">@Prop</span>({ <span class="hljs-attr">required</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">unique</span>: <span class="hljs-literal">true</span> })
+  customerId!: <span class="hljs-built_in">string</span>;
+  <span class="hljs-comment">// ...</span>
+}
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> <span class="hljs-title class_">CustomerSchema</span> = <span class="hljs-title class_">SchemaFactory</span>.<span class="hljs-title function_">createForClass</span>(<span class="hljs-title class_">CustomerEntity</span>);
+</code></pre>
+<ul>
+<li class="has-line-data" data-line-start="234" data-line-end="235"><code>@Schema()</code>/<code>@Prop()</code> are just decorator <em>metadata</em> attached to the class — they don’t do anything by themselves.</li>
+<li class="has-line-data" data-line-start="235" data-line-end="236"><code>SchemaFactory.createForClass(CustomerEntity)</code> reads that metadata via <code>reflect-metadata</code> and builds the real Mongoose <code>Schema</code> instance (<code>CustomerSchema</code>) that Mongoose’s engine actually understands (validators, indexes, field types).</li>
+<li class="has-line-data" data-line-start="236" data-line-end="238">That resulting <code>CustomerSchema</code> is what gets handed to <code>forFeature([{ name: ..., schema: CustomerSchema }])</code> above — the class is source-of-truth NestJS decorator syntax; <code>SchemaFactory</code> is the bridge that turns it into what plain Mongoose expects.</li>
+</ul>
+<p class="has-line-data" data-line-start="238" data-line-end="239"><strong>Putting the three together, in order of execution:</strong></p>
+<pre><code class="has-line-data" data-line-start="240" data-line-end="245">1. customer.schema.ts:   @Schema()/@Prop() class  →  SchemaFactory.createForClass()  →  CustomerSchema
+2. app.module.ts:        MongooseModule.forRootAsync()  →  one DB connection for the app
+3. customers.module.ts:  MongooseModule.forFeature([{ name: &quot;CustomerEntity&quot;, schema: CustomerSchema }])
+4. customer.service.ts:  @InjectModel(CustomerEntity.name) → resolves to a live Model&lt;CustomerRecord&gt;
+</code></pre>
+<hr>
+<h2 class="code-line has-line-data" data-line-start="248" data-line-end="249"><a id="8_Guards_CanActivate_and_custom_Pipes_PipeTransform_248"></a>8. Guards (<code>CanActivate</code>) and custom Pipes (<code>PipeTransform</code>)</h2>
+<p class="has-line-data" data-line-start="250" data-line-end="251"><strong>This project has neither.</strong> No <code>CanActivate</code> guard and no custom <code>PipeTransform</code> exist anywhere in <code>backend/src</code> — confirmed by grep. The only pipe in use is the built-in global <code>ValidationPipe</code> (see §4/§5), and there is no authentication/authorization layer at all (every route in every controller is fully open).</p>
+<p class="has-line-data" data-line-start="252" data-line-end="253">Still useful to know what these <em>are</em>, since they’re the natural next thing this codebase is missing:</p>
+<h3 class="code-line has-line-data" data-line-start="254" data-line-end="255"><a id="Guards_CanActivate_254"></a>Guards — <code>CanActivate</code></h3>
+<p class="has-line-data" data-line-start="256" data-line-end="257">A Guard runs <strong>before</strong> the route handler (and before body-parsing pipes) and answers one yes/no question: <em>is this request allowed to proceed at all?</em> Typically used for auth/roles — not data shape.</p>
+<pre><code class="has-line-data language-ts" data-line-start="259" data-line-end="268"><span class="hljs-comment">// hypothetical: backend/src/common/guards/api-key.guard.ts</span>
+<span class="hljs-meta">@Injectable</span>()
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">ApiKeyGuard</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">CanActivate</span> {
+  <span class="hljs-title function_">canActivate</span>(<span class="hljs-attr">context</span>: <span class="hljs-title class_">ExecutionContext</span>): <span class="hljs-built_in">boolean</span> {
+    <span class="hljs-keyword">const</span> req = context.<span class="hljs-title function_">switchToHttp</span>().<span class="hljs-property">getRequest</span>&lt;<span class="hljs-title class_">Request</span>&gt;();
+    <span class="hljs-keyword">return</span> req.<span class="hljs-property">headers</span>[<span class="hljs-string">&quot;x-api-key&quot;</span>] === process.<span class="hljs-property">env</span>.<span class="hljs-property">INTERNAL_API_KEY</span>;
+  }
+}
+</code></pre>
+<p class="has-line-data" data-line-start="268" data-line-end="269">Applied per-controller/route with <code>@UseGuards(ApiKeyGuard)</code>, or globally via <code>app.useGlobalGuards(new ApiKeyGuard())</code> in <code>main.ts</code> — the same three registration levels (global / controller / method) that pipes and filters support.</p>
+<p class="has-line-data" data-line-start="270" data-line-end="271">Where this repo would plausibly add one: <code>AgentsController</code>’s <code>POST /api/chat</code> and <code>WorkflowsController</code>’s <code>POST .../decision</code> are both wide open — a <code>CanActivate</code> guard is exactly the mechanism NestJS gives you to close that gap without touching the handler logic itself.</p>
+<h3 class="code-line has-line-data" data-line-start="272" data-line-end="273"><a id="Custom_Pipes_PipeTransform_272"></a>Custom Pipes — <code>PipeTransform</code></h3>
+<p class="has-line-data" data-line-start="274" data-line-end="275">A Pipe runs <strong>on a specific argument</strong>, transforming or validating it before it reaches the handler’s parameter. The built-in <code>ValidationPipe</code> is one; you can also write your own for one-off argument-level checks that don’t warrant a whole DTO class.</p>
+<pre><code class="has-line-data language-ts" data-line-start="277" data-line-end="288"><span class="hljs-comment">// hypothetical: backend/src/common/pipes/parse-decision.pipe.ts</span>
+<span class="hljs-meta">@Injectable</span>()
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">ParseDecisionPipe</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">PipeTransform</span>&lt;<span class="hljs-built_in">string</span>, <span class="hljs-string">&quot;approved&quot;</span> | <span class="hljs-string">&quot;rejected&quot;</span>&gt; {
+  <span class="hljs-title function_">transform</span>(<span class="hljs-attr">value</span>: <span class="hljs-built_in">string</span>): <span class="hljs-string">&quot;approved&quot;</span> | <span class="hljs-string">&quot;rejected&quot;</span> {
+    <span class="hljs-keyword">if</span> (value !== <span class="hljs-string">&quot;approved&quot;</span> &amp;&amp; value !== <span class="hljs-string">&quot;rejected&quot;</span>) {
+      <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">BadRequestException</span>(<span class="hljs-string">&quot;decision must be &#x27;approved&#x27; or &#x27;rejected&#x27;&quot;</span>);
+    }
+    <span class="hljs-keyword">return</span> value;
+  }
+}
+</code></pre>
+<p class="has-line-data" data-line-start="288" data-line-end="289">Applied directly on the parameter: <code>@Body(&quot;decision&quot;, ParseDecisionPipe) decision: &quot;approved&quot; | &quot;rejected&quot;</code>.</p>
+<p class="has-line-data" data-line-start="290" data-line-end="291">This would be the natural refactor of the manual <code>if</code> check currently sitting in <code>WorkflowsController</code> (see §5c) — instead of an inline check inside the handler body, the validation would move to the parameter boundary, consistent with how <code>ValidationPipe</code> already handles <code>ChatRequestDto</code>.</p>
+<p class="has-line-data" data-line-start="292" data-line-end="293"><strong>Guards vs. Pipes, in one line:</strong> a Guard decides <em>whether the request runs at all</em> (identity/permission); a Pipe decides <em>whether this argument’s value is well-formed</em> (shape/type) — Guards run first, then Pipes, then the handler body.</p>
+
+</body>
+</html>
