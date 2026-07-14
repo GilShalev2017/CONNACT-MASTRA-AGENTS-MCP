@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>most_important_interview_questions</title>
+  <style>
+  @import url("https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.9.0-alpha2/katex.min.css");
+
+  body {
+    font-family: Georgia, Cambria, serif;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #373D49;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: "Source Sans Pro", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: 600;
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+  }
+  h1 { font-size: 2em; }
+  h2 { font-size: 1.5em; }
+  h3 { font-size: 1.25em; }
+  a { color: #35D7BB; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code {
+    font-family: "Ubuntu Mono", Monaco, monospace;
+    background: #F5F7FA;
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+  }
+  pre {
+    background: #F5F7FA;
+    padding: 1em;
+    border-radius: 3px;
+    overflow-x: auto;
+  }
+  .hljs {
+    display: block;
+    overflow-x: auto;
+    padding: 0;
+    color: #333;
+  }
+  pre code { background: none; padding: 0; }
+  blockquote {
+    border-left: 3px solid #A0AABF;
+    padding-left: 1em;
+    margin-left: 0;
+    font-style: italic;
+    color: #666;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+  th, td {
+    border: 1px solid #E8E8E8;
+    padding: 0.5em;
+    text-align: left;
+  }
+  th {
+    background: #F5F7FA;
+    font-weight: 600;
+  }
+  #preview .table {
+    width: auto;
+  }
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+  .katex-display {
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+</style>
+</head>
+<body id="preview">
+<p class="has-line-data" data-line-start="0" data-line-end="1">These are exactly the kind of questions a CTO or AI Architect might ask in an interview. You don’t need to be an expert researcher, but you should demonstrate that you understand the engineering trade-offs.</p>
+<hr>
+<h2 class="code-line has-line-data" data-line-start="4" data-line-end="5"><a id="1_How_do_you_know_that_semantic_search_is_returning_relevant_information_4"></a>1. How do you know that semantic search is returning relevant information?</h2>
+<h3 class="code-line has-line-data" data-line-start="6" data-line-end="7"><a id="What_the_interviewer_is_looking_for_6"></a>What the interviewer is looking for</h3>
+<p class="has-line-data" data-line-start="8" data-line-end="9">They want to know whether you understand that embeddings don’t magically produce good results.</p>
+<h3 class="code-line has-line-data" data-line-start="10" data-line-end="11"><a id="Good_answer_10"></a>Good answer</h3>
+<blockquote>
+<p class="has-line-data" data-line-start="12" data-line-end="13">There are several ways to evaluate semantic search.</p>
+<p class="has-line-data" data-line-start="14" data-line-end="15">First, I would create a representative set of real user queries with the documents that should be retrieved. Then I’d measure metrics like Recall@K or Precision@K to see whether the expected documents appear in the top results.</p>
+<p class="has-line-data" data-line-start="16" data-line-end="17">I’d also manually review difficult cases, because automated metrics don’t always reflect whether the retrieved context is actually useful for the LLM.</p>
+<p class="has-line-data" data-line-start="18" data-line-end="19">In production, I’d monitor user feedback and search success rates, and periodically re-evaluate the embedding model and chunking strategy as the data evolves.</p>
+</blockquote>
+<h3 class="code-line has-line-data" data-line-start="20" data-line-end="21"><a id="Keywords_worth_mentioning_20"></a>Keywords worth mentioning</h3>
+<ul>
+<li class="has-line-data" data-line-start="22" data-line-end="23">Recall@K</li>
+<li class="has-line-data" data-line-start="23" data-line-end="24">Precision@K</li>
+<li class="has-line-data" data-line-start="24" data-line-end="25">Ground truth dataset</li>
+<li class="has-line-data" data-line-start="25" data-line-end="26">Chunking strategy</li>
+<li class="has-line-data" data-line-start="26" data-line-end="27">Embedding quality</li>
+<li class="has-line-data" data-line-start="27" data-line-end="29">User feedback</li>
+</ul>
+<hr>
+<h2 class="code-line has-line-data" data-line-start="31" data-line-end="32"><a id="2_How_do_you_deal_with_hallucinations_31"></a>2. How do you deal with hallucinations?</h2>
+<h3 class="code-line has-line-data" data-line-start="33" data-line-end="34"><a id="Good_answer_33"></a>Good answer</h3>
+<blockquote>
+<p class="has-line-data" data-line-start="35" data-line-end="36">The first step is to minimize hallucinations by grounding the model with retrieved context using RAG instead of relying solely on the model’s internal knowledge.</p>
+<p class="has-line-data" data-line-start="37" data-line-end="38">I would instruct the model to answer only from the provided context and admit when the information isn’t available.</p>
+<p class="has-line-data" data-line-start="39" data-line-end="40">I’d also return source references so users can verify the answer.</p>
+<p class="has-line-data" data-line-start="41" data-line-end="42">For critical business workflows, I’d validate outputs using deterministic business rules or human review before taking automated actions.</p>
+</blockquote>
+<h3 class="code-line has-line-data" data-line-start="43" data-line-end="44"><a id="Mention_techniques_like_43"></a>Mention techniques like</h3>
+<ul>
+<li class="has-line-data" data-line-start="45" data-line-end="46">RAG</li>
+<li class="has-line-data" data-line-start="46" data-line-end="47">Prompt engineering</li>
+<li class="has-line-data" data-line-start="47" data-line-end="48">Source citations</li>
+<li class="has-line-data" data-line-start="48" data-line-end="49">Confidence thresholds</li>
+<li class="has-line-data" data-line-start="49" data-line-end="50">Human in the loop</li>
+<li class="has-line-data" data-line-start="50" data-line-end="52">Validation layer</li>
+</ul>
+<hr>
+<h2 class="code-line has-line-data" data-line-start="54" data-line-end="55"><a id="3_How_do_you_measure_quality_54"></a>3. How do you measure quality?</h2>
+<h3 class="code-line has-line-data" data-line-start="56" data-line-end="57"><a id="Good_answer_56"></a>Good answer</h3>
+<blockquote>
+<p class="has-line-data" data-line-start="58" data-line-end="59">Quality should be measured at multiple levels.</p>
+<p class="has-line-data" data-line-start="60" data-line-end="61">For retrieval, I’d evaluate whether the correct documents are being returned.</p>
+<p class="has-line-data" data-line-start="62" data-line-end="63">For generation, I’d compare model responses against expected answers using benchmark datasets and human evaluation.</p>
+<p class="has-line-data" data-line-start="64" data-line-end="65">In production, I’d monitor metrics such as user satisfaction, successful task completion, response accuracy, and the percentage of responses requiring human correction.</p>
+</blockquote>
+<p class="has-line-data" data-line-start="66" data-line-end="67">Possible metrics:</p>
+<ul>
+<li class="has-line-data" data-line-start="68" data-line-end="69">Precision</li>
+<li class="has-line-data" data-line-start="69" data-line-end="70">Recall</li>
+<li class="has-line-data" data-line-start="70" data-line-end="71">Accuracy</li>
+<li class="has-line-data" data-line-start="71" data-line-end="72">Task completion rate</li>
+<li class="has-line-data" data-line-start="72" data-line-end="73">User satisfaction</li>
+<li class="has-line-data" data-line-start="73" data-line-end="74">Human evaluation</li>
+<li class="has-line-data" data-line-start="74" data-line-end="76">Hallucination rate</li>
+</ul>
+<hr>
+<h2 class="code-line has-line-data" data-line-start="78" data-line-end="79"><a id="4_How_do_you_preserve_permissions_when_the_LLM_has_access_to_enterprise_data_78"></a>4. How do you preserve permissions when the LLM has access to enterprise data?</h2>
+<p class="has-line-data" data-line-start="80" data-line-end="81">This is an excellent enterprise question.</p>
+<h3 class="code-line has-line-data" data-line-start="82" data-line-end="83"><a id="Good_answer_82"></a>Good answer</h3>
+<blockquote>
+<p class="has-line-data" data-line-start="84" data-line-end="85">The LLM itself shouldn’t enforce permissions. Authorization should happen before any information reaches the model.</p>
+<p class="has-line-data" data-line-start="86" data-line-end="87">The retrieval layer should only search documents that the authenticated user is authorized to access.</p>
+<p class="has-line-data" data-line-start="88" data-line-end="89">Authentication and authorization should rely on the organization’s existing identity provider, such as Azure AD or Cognito, and every request should carry the user’s identity and permissions.</p>
+<p class="has-line-data" data-line-start="90" data-line-end="91">Audit logging is also important so every retrieval request and AI-generated response can be traced.</p>
+</blockquote>
+<p class="has-line-data" data-line-start="92" data-line-end="93">Mention:</p>
+<ul>
+<li class="has-line-data" data-line-start="94" data-line-end="95">RBAC (Role-Based Access Control)</li>
+<li class="has-line-data" data-line-start="95" data-line-end="96">ABAC (Attribute-Based Access Control)</li>
+<li class="has-line-data" data-line-start="96" data-line-end="97">Identity Provider (Azure AD, Cognito, Okta)</li>
+<li class="has-line-data" data-line-start="97" data-line-end="98">Audit logs</li>
+<li class="has-line-data" data-line-start="98" data-line-end="100">Least privilege</li>
+</ul>
+<hr>
+<h2 class="code-line has-line-data" data-line-start="102" data-line-end="103"><a id="5_How_do_you_control_costs_and_latency_102"></a>5. How do you control costs and latency?</h2>
+<p class="has-line-data" data-line-start="104" data-line-end="105">This is another question CTOs love because it’s about operating AI systems at scale.</p>
+<h3 class="code-line has-line-data" data-line-start="106" data-line-end="107"><a id="Good_answer_106"></a>Good answer</h3>
+<blockquote>
+<p class="has-line-data" data-line-start="108" data-line-end="109">There are several optimization techniques.</p>
+<p class="has-line-data" data-line-start="110" data-line-end="111">I’d use semantic search to retrieve only the most relevant chunks instead of sending large amounts of text to the LLM.</p>
+<p class="has-line-data" data-line-start="112" data-line-end="113">I’d cache frequent responses and embeddings where appropriate.</p>
+<p class="has-line-data" data-line-start="114" data-line-end="115">I’d choose smaller, faster models for simpler tasks and reserve larger models for more complex reasoning.</p>
+<p class="has-line-data" data-line-start="116" data-line-end="117">I’d also limit the prompt size, use asynchronous processing for long-running operations, and monitor token usage to control costs.</p>
+</blockquote>
+<p class="has-line-data" data-line-start="118" data-line-end="119">Things to mention</p>
+<ul>
+<li class="has-line-data" data-line-start="120" data-line-end="121">Caching</li>
+<li class="has-line-data" data-line-start="121" data-line-end="122">Smaller models</li>
+<li class="has-line-data" data-line-start="122" data-line-end="123">Prompt optimization</li>
+<li class="has-line-data" data-line-start="123" data-line-end="124">Chunking</li>
+<li class="has-line-data" data-line-start="124" data-line-end="125">Token limits</li>
+<li class="has-line-data" data-line-start="125" data-line-end="126">Streaming responses</li>
+<li class="has-line-data" data-line-start="126" data-line-end="127">Async processing</li>
+<li class="has-line-data" data-line-start="127" data-line-end="129">Monitoring token usage</li>
+</ul>
+<hr>
+<h1 class="code-line has-line-data" data-line-start="131" data-line-end="132"><a id="If_they_ask_you_to_summarize_your_approach_131"></a>If they ask you to summarize your approach</h1>
+<p class="has-line-data" data-line-start="133" data-line-end="134">A concise answer could be:</p>
+<blockquote>
+<p class="has-line-data" data-line-start="135" data-line-end="136">“When building an enterprise AI application, I think about five areas: retrieval quality, reducing hallucinations, measuring accuracy, enforcing security before data reaches the model, and optimizing cost and latency. Those are the key engineering challenges that turn a prototype into a production-ready AI system.”</p>
+</blockquote>
+<p class="has-line-data" data-line-start="137" data-line-end="138">That answer sounds practical and demonstrates an understanding of the broader system, even if your hands-on experience is primarily through prototypes and learning rather than large-scale production deployments.</p>
+
+</body>
+</html>
