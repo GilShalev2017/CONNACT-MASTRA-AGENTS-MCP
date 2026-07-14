@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShortVersion_CodeBase_Quetsions_And_Answers</title>
+  <style>
+  @import url("https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.9.0-alpha2/katex.min.css");
+
+  body {
+    font-family: Georgia, Cambria, serif;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #373D49;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: "Source Sans Pro", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: 600;
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+  }
+  h1 { font-size: 2em; }
+  h2 { font-size: 1.5em; }
+  h3 { font-size: 1.25em; }
+  a { color: #35D7BB; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code {
+    font-family: "Ubuntu Mono", Monaco, monospace;
+    background: #F5F7FA;
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+  }
+  pre {
+    background: #F5F7FA;
+    padding: 1em;
+    border-radius: 3px;
+    overflow-x: auto;
+  }
+  .hljs {
+    display: block;
+    overflow-x: auto;
+    padding: 0;
+    color: #333;
+  }
+  pre code { background: none; padding: 0; }
+  blockquote {
+    border-left: 3px solid #A0AABF;
+    padding-left: 1em;
+    margin-left: 0;
+    font-style: italic;
+    color: #666;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+  th, td {
+    border: 1px solid #E8E8E8;
+    padding: 0.5em;
+    text-align: left;
+  }
+  th {
+    background: #F5F7FA;
+    font-weight: 600;
+  }
+  #preview .table {
+    width: auto;
+  }
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+  .katex-display {
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+</style>
+</head>
+<body id="preview">
+<h1 class="code-line has-line-data" data-line-start="0" data-line-end="1"><a id="Q_A_Short_Version_0"></a>Q &amp; A — Short Version</h1>
+<p class="has-line-data" data-line-start="2" data-line-end="3">Condensed version of <a href="Q%20&amp;%20A.md"><code>Q &amp; A.md</code></a> — same 18 questions, answers trimmed to the essentials. See the full doc for code excerpts, tables of evidence, and line-level references.</p>
+<hr>
+<h2 class="code-line has-line-data" data-line-start="6" data-line-end="7"><a id="1_DTO_validation_when_by_whom_what_happens_on_failure_6"></a>1. DTO validation — when, by whom, what happens on failure?</h2>
+<p class="has-line-data" data-line-start="7" data-line-end="8">NestJS’s global <code>ValidationPipe</code> (<code>main.ts</code>) runs <code>class-validator</code>/<code>class-transformer</code> on every <code>@Body()</code>-typed DTO. Only <code>ChatRequestDto</code> (<code>chat.dto.ts</code>) actually has validators (<code>@IsString()</code>, <code>@MinLength(1)</code>) — no other controller has DTO validation at all. On failure: throws <code>BadRequestException</code> (HTTP 400) <em>before</em> the route handler runs; the global <code>LlmErrorFilter</code> passes <code>HttpException</code>s through unchanged.</p>
+<h2 class="code-line has-line-data" data-line-start="9" data-line-end="10"><a id="2_Mastra_tool_description_who_uses_it_9"></a>2. Mastra tool <code>description</code> — who uses it?</h2>
+<p class="has-line-data" data-line-start="10" data-line-end="11">It’s just a stored property with no logic of its own. Mastra converts it (via the Vercel AI SDK → <code>@ai-sdk/anthropic</code>) into the <code>tools[].description</code> field sent in Claude’s actual API request — the <strong>LLM</strong> reads it to decide which tool to call and how. Never shown in the UI; <code>AgentActivityPanel</code> only renders tool name/args/result, not the static description.</p>
+<h2 class="code-line has-line-data" data-line-start="12" data-line-end="13"><a id="3_Are_DTOstypes_shared_between_frontend_and_backend_12"></a>3. Are DTOs/types shared between frontend and backend?</h2>
+<p class="has-line-data" data-line-start="13" data-line-end="14">No — no workspace, no shared package. <code>frontend/src/types.ts</code> hand-duplicates backend response shapes (<code>ChatResponse</code>, <code>ExecutiveBriefing</code>, <code>RecommendedAction</code>, etc.), sometimes under different names (<code>RagSource</code> vs. <code>RagSearchResult</code>). Kept in sync by hand; nothing catches drift at build time.</p>
+<h2 class="code-line has-line-data" data-line-start="15" data-line-end="16"><a id="4_What_does_stripTemperature_do_15"></a>4. What does <code>stripTemperature</code> do?</h2>
+<p class="has-line-data" data-line-start="16" data-line-end="17">Wraps the Anthropic model in a <code>Proxy</code> that forces <code>temperature: undefined</code> on <code>doGenerate</code>/<code>doStream</code>. Needed because the pinned <code>ai</code> v4 SDK always defaults <code>temperature: 0</code> with no way to omit it, and Claude Sonnet 5 rejects any explicit <code>temperature</code> outright — every <code>agent.generate()</code> call was failing with 500. Side effect: temperature can no longer be pinned low, so structured-output calls run at Claude’s (higher) default temperature.</p>
+<h2 class="code-line has-line-data" data-line-start="18" data-line-end="19"><a id="5_What_does_temperature_mean_Is_it_a_confidence_dial_18"></a>5. What does “temperature” mean? Is it a confidence dial?</h2>
+<p class="has-line-data" data-line-start="19" data-line-end="20">It’s a sampling-time knob on the model’s next-token probability distribution — low temperature (→0) picks the most likely token almost every time (deterministic, repeatable); high temperature flattens the distribution (more varied, more drift-prone). <strong>It is not a confidence/certainty measure</strong> — a confidently wrong answer at temperature 0 is wrong the same way every time. This app can’t choose it at all today (Q4 strips it entirely).</p>
+<h2 class="code-line has-line-data" data-line-start="21" data-line-end="22"><a id="6_Does_chat_have_memory_between_turns_21"></a>6. Does chat have memory between turns?</h2>
+<p class="has-line-data" data-line-start="22" data-line-end="23">No. <code>conversationId</code> is generated/echoed by <code>MastraService.chat()</code> but never used to look anything up; <code>agent.generate()</code> only ever receives the current message, no history. The UI’s thread view is client-side only — <code>api.chat()</code> sends just <code>{ message, conversationId }</code>. To add real continuity: persist turns in Mongo keyed by <code>conversationId</code> (small, dependency-free), or wire up Mastra’s built-in <code>Memory</code> feature (bigger but more “correct” — <code>@mastra/memory</code> isn’t installed and no agent passes a <code>memory</code> option today).</p>
+<h2 class="code-line has-line-data" data-line-start="24" data-line-end="25"><a id="7_model_is_a_local_variable_in_onModuleInit_leak_24"></a>7. <code>model</code> is a local variable in <code>onModuleInit()</code> — leak?</h2>
+<p class="has-line-data" data-line-start="25" data-line-end="26">Not a closure — Mastra’s <code>Agent</code> constructor copies the reference into its own <code>this.model</code>, so it stays reachable via <code>MastraService</code> (a singleton) → its 4 <code>Agent</code> fields → <code>.model</code>, for the app’s whole lifetime. One shared model instance across all 4 agents, not four. Not a leak: created once at startup, never reallocated per-request.</p>
+<h2 class="code-line has-line-data" data-line-start="27" data-line-end="28"><a id="8_What_changes_for_a_real_productionSaaS_deployment_27"></a>8. What changes for a real production/SaaS deployment?</h2>
+<p class="has-line-data" data-line-start="28" data-line-end="29"><strong>Security</strong>: zero auth anywhere (confirmed by grep — no Guards/JWT/passport), MCP server also wide open, secrets in plaintext <code>.env</code>, no rate limiting, RAG/CRM content is trusted input (prompt-injection surface). <strong>Testing</strong>: zero tests, zero CI. <strong>Reliability</strong>: no retries/circuit breakers, no correlation IDs, no metrics/tracing wired up. <strong>Scaling</strong>: <code>WorkflowsService.pendingActions</code> is an in-memory <code>Map</code> — breaks under multiple replicas; chat memory needs the same fix; embedding model loads in-process per replica; single Mongo/Qdrant containers, no prompt caching. <strong>Multi-tenancy</strong>: no <code>tenantId</code> anywhere in any schema. <strong>DevOps</strong>: Dockerfiles exist but no CI/CD. Priority order: auth → fix the in-memory queue → tests → observability.</p>
+<h2 class="code-line has-line-data" data-line-start="30" data-line-end="31"><a id="9_Is_the_MCP_server_actually_discoverable_30"></a>9. Is the MCP server actually discoverable?</h2>
+<p class="has-line-data" data-line-start="31" data-line-end="32">MCP’s own discovery mechanism (<code>tools/list</code>) is implemented correctly server-side — any generic MCP client could discover all 5 tools today with zero prior integration. But this app’s own agent doesn’t use that: <code>McpClientService.listTools()</code> exists but is <strong>never called</strong>; <code>crm.tools.ts</code> hand-duplicates the same tool descriptions instead, risking drift. Small fix: build the Mastra tool map dynamically from <code>listTools()</code> at startup. Real-world discoverability also needs: a stable public URL (not <code>localhost</code>), OAuth 2.1 auth, MCP tool annotations, a published manifest, and schema versioning.</p>
+<h2 class="code-line has-line-data" data-line-start="33" data-line-end="34"><a id="10_Agent_tools_Mastra_vs_MCP_tools_whats_the_difference_33"></a>10. Agent tools (Mastra) vs. MCP tools — what’s the difference?</h2>
+<p class="has-line-data" data-line-start="34" data-line-end="35">Mastra tool = in-process, LLM-facing (what Claude’s API actually sees in <code>tools[]</code>). MCP tool = out-of-process, protocol-facing, callable by any MCP client in any language. For the 5 CRM tools: Mastra wrapper (<code>crm.tools.ts</code>) → <code>McpClientService.callTool()</code> → real MCP call over HTTP → <code>crm-mcp-server</code> → Mongo. <code>searchKnowledgeBase</code> has no MCP hop at all — straight to Qdrant. Proven not 1:1: two places (<code>mastra.service.ts</code>’s history fast-path, the executive-briefing workflow step) call <code>mcpClient.callTool()</code> directly, bypassing any Mastra tool or LLM decision. The extra MCP hop buys decoupling — the CRM backend can be swapped/reused/scaled independently.</p>
+<h2 class="code-line has-line-data" data-line-start="36" data-line-end="37"><a id="11_Which_modules_embed_text_36"></a>11. Which modules embed text?</h2>
+<p class="has-line-data" data-line-start="37" data-line-end="38">Both <code>DocumentService</code> and <code>TranscriptionService</code> — two entry points into the same shared pipeline (<code>chunkText</code> → <code>embedBatch</code> → <code>upsertChunks</code>), feeding one Qdrant collection. Confirmed live: 22 points split across 6 <code>documentType</code>s (<code>meeting-transcript</code>, <code>finops-guide</code>, etc.) — only the <code>documentType</code>/<code>customerId</code> payload fields distinguish them.</p>
+<h2 class="code-line has-line-data" data-line-start="39" data-line-end="40"><a id="12_When_does_semantic_search_run_Round_trip_to_Mongo_Why_overlap_39"></a>12. When does semantic search run? Round trip to Mongo? Why overlap?</h2>
+<p class="has-line-data" data-line-start="40" data-line-end="41">One call per <code>searchKnowledgeBase</code> invocation: embed the query, then <code>vectorService.search()</code>. <strong>No Mongo round trip</strong> — the chunk’s actual text is stored directly in the Qdrant point’s payload, so results are immediately quotable. Chunking is a fixed 180-word sliding window; a document becomes several separate Qdrant points sharing one <code>documentId</code>, each holding only its own slice, not the whole text. The 30-word overlap exists so a sentence straddling a chunk boundary appears complete in at least one neighboring chunk instead of truncated in both.</p>
+<h2 class="code-line has-line-data" data-line-start="42" data-line-end="43"><a id="13_Does_the_Qdrant_dashboard_show_real_learnable_data_42"></a>13. Does the Qdrant dashboard show real, learnable data?</h2>
+<p class="has-line-data" data-line-start="43" data-line-end="44">Yes — verified live (22 real points, real customer/meeting text, reachable at <code>:6333/dashboard</code>). Honest caveat: with only 22 points, the 2D cluster-visualization tab won’t show much; it’s most useful here for manually inspecting real chunk boundaries and overlap, not for big-data exploration.</p>
+<h2 class="code-line has-line-data" data-line-start="45" data-line-end="46"><a id="14_What_does_indexTranscript_actually_do_45"></a>14. What does <code>indexTranscript()</code> actually do?</h2>
+<p class="has-line-data" data-line-start="46" data-line-end="47">“Index” here means making the transcript semantically searchable (a vector index), not a MongoDB index. Steps: delete any existing Qdrant chunks for this <code>meetingId</code> (idempotent re-run) → <code>chunkText()</code> the transcript → embed each chunk → <code>upsertChunks()</code> into Qdrant. Called from <code>analyzeAndIndex()</code> (runs fresh LLM analysis first) and <code>ensureAllIndexed()</code> (startup fast path for pre-summarized seed data that skips the LLM call).</p>
+<h2 class="code-line has-line-data" data-line-start="48" data-line-end="49"><a id="15_What_types_of_agent_exist_in_this_codebase_48"></a>15. What types of “agent” exist in this codebase?</h2>
+<p class="has-line-data" data-line-start="49" data-line-end="50"><strong>(1) Plain tool-less agents</strong> (<code>historySummarizerAgent</code>, <code>meetingAnalysisAgent</code>, <code>executiveBriefingAgent</code>) — pure prompt-in/text-or-object-out, no autonomy, can’t fetch their own data. <strong>(2) <code>cloudPartnershipAgent</code></strong> — the only tool-using agent; the model itself drives a multi-step tool-calling loop (<code>maxSteps</code>). <strong>(3) The executive-briefing <code>Workflow</code></strong> — code (not the LLM) fixes the step order via <code>createStep</code>/<code>createWorkflow().then().then().commit()</code>; an agent is invoked inside just one step with zero say over the pipeline. <code>createStep</code> defines one typed pipeline stage; <code>.then()</code> wires each step’s output schema to the next step’s input schema; <code>.commit()</code> finalizes it for <code>createRun()</code>/<code>start()</code>.</p>
+<h2 class="code-line has-line-data" data-line-start="51" data-line-end="52"><a id="16_Whats_the_purpose_of_inputoutput_schemas_and_what_is_Zod_51"></a>16. What’s the purpose of input/output schemas, and what is Zod?</h2>
+<p class="has-line-data" data-line-start="52" data-line-end="53">Zod gives one schema declaration both a runtime validator (<code>.parse</code>/<code>.safeParse</code>) and a derived TS type (<code>z.infer</code>) — no hand-duplicated interfaces. The same <code>z.object({...})</code> syntax plays three different roles here: <strong>tool <code>inputSchema</code></strong> (what the LLM must supply to call a tool), <strong>workflow step schemas</strong> (data contract between pipeline stages, enforced at runtime), and <strong>structured <code>output</code> schema</strong> (coerces/validates the model’s final answer into JSON — the exact mechanism behind Q4/Q5’s schema-compliance bug). Different boundary than <code>class-validator</code> (Q1): that’s the HTTP request boundary, Zod is the LLM/pipeline boundary.</p>
+<h2 class="code-line has-line-data" data-line-start="54" data-line-end="55"><a id="17_Mastra_API_reference_how_do_you_invoke_agentsworkflows_and_what_do_they_return_54"></a>17. Mastra API reference — how do you invoke agents/workflows, and what do they return?</h2>
+<table class="table table-striped table-bordered">
+<thead>
+<tr>
+<th>API</th>
+<th>Returns</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>new Agent({...})</code></td>
+<td>An <code>Agent</code> instance (no LLM call yet)</td>
+</tr>
+<tr>
+<td><code>agent.generate(messages, options?)</code></td>
+<td><code>Promise&lt;GenerateReturn&gt;</code> — <code>GenerateTextResult</code> (<code>.text</code>, <code>.toolCalls</code>, <code>.steps</code>) if no <code>output</code> schema, else <code>GenerateObjectResult</code> (<code>.object</code>)</td>
+</tr>
+<tr>
+<td><code>createTool({...})</code></td>
+<td>A <code>Tool</code> instance, only ever handed into an <code>Agent</code>’s <code>tools</code> map</td>
+</tr>
+<tr>
+<td><code>createStep({...})</code></td>
+<td>A <code>Step</code> instance (one pipeline stage)</td>
+</tr>
+<tr>
+<td><code>createWorkflow({...}).then().commit()</code></td>
+<td>A <code>Workflow</code> instance</td>
+</tr>
+<tr>
+<td><code>workflow.createRun()</code></td>
+<td>A <code>Run</code> instance — synchronous, nothing executed yet</td>
+</tr>
+<tr>
+<td><code>run.start({inputData})</code></td>
+<td><code>Promise&lt;WorkflowResult&gt;</code> — discriminated union: <code>{status:'success', result, steps}</code> | <code>{status:'failed', error}</code> | <code>{status:'suspended'}</code></td>
+</tr>
+<tr>
+<td><code>new Mastra({agents})</code></td>
+<td>A <code>Mastra</code> registry instance — built in this app but never actually read again (agents are invoked directly, not via the registry)</td>
+</tr>
+</tbody>
+</table>
+<p class="has-line-data" data-line-start="67" data-line-end="68"><code>mcpClient.callTool()</code> is <strong>not</strong> a Mastra API — it’s this app’s own wrapper around the MCP SDK (see Q18).</p>
+<h2 class="code-line has-line-data" data-line-start="69" data-line-end="70"><a id="18_MCP_SDK_API_reference_the_actual_clientserver_calls_used_69"></a>18. MCP SDK API reference — the actual client/server calls used</h2>
+<p class="has-line-data" data-line-start="71" data-line-end="72"><strong>Client side</strong> (<code>McpClientService</code>, talks to <code>crm-mcp-server</code>):</p>
+<table class="table table-striped table-bordered">
+<thead>
+<tr>
+<th>API</th>
+<th>Returns</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>new Client({...})</code> / <code>new StreamableHTTPClientTransport(url)</code></td>
+<td>Client / transport instances, no network call yet</td>
+</tr>
+<tr>
+<td><code>client.connect(transport)</code></td>
+<td><code>Promise&lt;void&gt;</code> — performs the handshake</td>
+</tr>
+<tr>
+<td><code>client.listTools()</code></td>
+<td><code>Promise&lt;{tools: [...]}&gt;</code> — the protocol’s discovery call (each tool includes an <code>annotations</code> field for <code>readOnlyHint</code>/etc., unused by <code>crm-mcp-server</code> today)</td>
+</tr>
+<tr>
+<td><code>client.callTool(params)</code></td>
+<td><code>Promise&lt;{content: [...]}&gt;</code> — mixed-type array; this app only reads the first <code>text</code> part and <code>JSON.parse</code>s it</td>
+</tr>
+<tr>
+<td><code>client.close()</code></td>
+<td><code>Promise&lt;void&gt;</code></td>
+</tr>
+</tbody>
+</table>
+<p class="has-line-data" data-line-start="81" data-line-end="82"><strong>Server side</strong> (<code>crm-mcp-server</code>):</p>
+<table class="table table-striped table-bordered">
+<thead>
+<tr>
+<th>API</th>
+<th>Returns</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>new McpServer({...})</code></td>
+<td>Built <strong>per HTTP request</strong> here (stateless design), not once at startup</td>
+</tr>
+<tr>
+<td><code>server.registerTool(name, config, callback)</code></td>
+<td>A <code>RegisteredTool</code> (sync) — also what makes the tool show up in <code>tools/list</code></td>
+</tr>
+<tr>
+<td><code>server.connect(transport)</code> / <code>new StreamableHTTPServerTransport()</code> / <code>transport.handleRequest(req, res)</code></td>
+<td><code>Promise&lt;void&gt;</code> each — the transport writes the HTTP response directly</td>
+</tr>
+<tr>
+<td><code>server.close()</code> / <code>transport.close()</code></td>
+<td><code>Promise&lt;void&gt;</code> — torn down per-request, paired with construction above</td>
+</tr>
+</tbody>
+</table>
+
+</body>
+</html>

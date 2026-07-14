@@ -619,3 +619,36 @@ Every one of these is imported from `@mastra/core` (or a subpath). Return types 
 **Worth flagging as a small inconsistency in this codebase**: `new Mastra({...})` is constructed and assigned to `this.mastra` in `mastra.service.ts`, but nothing ever reads it again afterward (confirmed by grep — no `mastra.getAgent(...)`/`mastra.getWorkflow(...)` call anywhere). Every agent is actually invoked by calling `.generate()` directly on the `Agent` instance the service already holds as its own field (`this.cloudPartnershipAgent`, etc.), not through the `Mastra` registry. The registry object exists but isn't currently doing any work in this app.
 
 **Not a Mastra API, easy to mix up with one**: `mcpClient.callTool(name, args)` (seen throughout Q10) is this app's *own* `McpClientService` method, wrapping the `@modelcontextprotocol/sdk`'s `client.callTool()` — it has nothing to do with `@mastra/core`. It shows up right alongside `createStep`/`agent.generate()` in `executive-briefing.workflow.ts`, which is exactly why it's worth calling out explicitly as a different library.
+
+---
+
+## 18. `@modelcontextprotocol/sdk` API reference — the actual MCP client/server calls used in this codebase
+
+Two separate processes use this SDK for two separate roles: [`McpClientService`](../backend/src/modules/mcp/mcp-client.service.ts) (in the NestJS backend) is an MCP **client**; [`mcp-server/src/server.ts`](../mcp-server/src/server.ts) (the standalone `crm-mcp-server` process) is an MCP **server**. Signatures/return types below are taken directly from the installed package's own `.d.ts` files, not inferred from usage.
+
+### Client side (`McpClientService` — talks *to* `crm-mcp-server`)
+
+| API | Used at | What it does | Returns |
+| --- | --- | --- | --- |
+| `new Client({ name, version }, options?)` | `mcp-client.service.ts:39` | Constructs an MCP client identity — just local object setup, no network call yet. | A `Client` instance |
+| `new StreamableHTTPClientTransport(url, options?)` | `mcp-client.service.ts:40` | Constructs the transport (Streamable HTTP, the same transport `crm-mcp-server` speaks) pointed at a URL — again, no network call yet, just configuration. | A `StreamableHTTPClientTransport` instance |
+| `client.connect(transport, options?)` | `mcp-client.service.ts:42` | Performs the actual network handshake/MCP initialization flow against the server over the given transport. | `Promise<void>` |
+| `client.listTools(params?, options?)` | `mcp-client.service.ts:57` | The protocol's tool-discovery call (Q9) — asks the server "what tools do you have?" | `Promise<{ tools: Array<{ name, description?, inputSchema, outputSchema?, annotations? }> }>` — that `annotations` field (`readOnlyHint`, `destructiveHint`, `idempotentHint`, `openWorldHint`) is exactly the MCP tool-annotation mechanism referenced in Q9; `crm-mcp-server` doesn't currently set any, so every tool reports `annotations: undefined` today. |
+| `client.callTool(params, resultSchema?, options?)` | `mcp-client.service.ts:67` | Actually invokes a named tool on the server with arguments (`params = { name, arguments }`), and waits for its result. | `Promise<{ content: Array<{ type: "text", text: string } \| { type: "image", ... } \| { type: "audio", ... } \| { type: "resource", ... } \| ...>, isError?, structuredContent? }>` — a `content` **array** that can mix types; this codebase only ever looks for the first `type === "text"` entry and `JSON.parse`s its `.text` (`mcp-client.service.ts:68-75`), since every `crm-mcp-server` tool only ever returns a single text part (see server side below). |
+| `client.close()` | `mcp-client.service.ts:34` (`onModuleDestroy`) | Closes the connection/transport cleanly on NestJS app shutdown. | `Promise<void>` |
+
+### Server side (`crm-mcp-server` — exposes the CRM tools)
+
+| API | Used at | What it does | Returns |
+| --- | --- | --- | --- |
+| `new McpServer({ name, version }, options?)` | `server.ts:29` | Constructs a fresh MCP server instance. Called **per HTTP request** here (`buildMcpServer()` is invoked inside the `/mcp` route handler, not once at startup) — deliberate, per the file's own comment: "a fresh server + transport per request... keeps the demo simple (no session affinity needed behind a load balancer)." | An `McpServer` instance |
+| `server.registerTool(name, config, callback)` | `server.ts:31,45,59,73,87` (once per CRM tool) | Registers one tool: `config` carries `title`, `description`, `inputSchema` (a Zod raw shape, not a full `z.object` — the SDK wraps it), and optionally `outputSchema`/`annotations`; `callback` is what actually runs on a `tools/call` request and must return a `{ content: [...] }` shape. This is also what automatically makes the tool show up in `tools/list` responses (Q9) — nothing else needs to register it separately for discovery. | A `RegisteredTool` (synchronous, not a promise) |
+| `server.connect(transport)` | `server.ts:123` | Binds this server instance to a transport and performs the server-side half of the MCP handshake. | `Promise<void>` |
+| `server.close()` | `server.ts:120` (on response `close`) | Tears down the per-request server instance once the HTTP response ends — paired with the per-request `McpServer` construction above. | `Promise<void>` |
+| `new StreamableHTTPServerTransport(options?)` | `server.ts:117` | Constructs the server-side transport for one request. `{ sessionIdGenerator: undefined }` here explicitly opts out of session tracking, matching the stateless-per-request design. | A `StreamableHTTPServerTransport` instance |
+| `transport.handleRequest(req, res, parsedBody?)` | `server.ts:124` | Feeds one raw Express `(req, res)` pair (plus the already-`express.json()`-parsed body) into the transport, which speaks the actual MCP JSON-RPC protocol over it and writes the HTTP response itself. | `Promise<void>` — nothing is returned to inspect; the transport writes directly to `res`. |
+| `transport.close()` | `server.ts:119` (on response `close`) | Tears down the per-request transport, paired with `server.close()` above. | `Promise<void>` |
+
+### How this maps onto Q10's "MCP tool vs. Mastra tool" distinction
+
+Everything in the client-side table is what `McpClientService` wraps into its own two public methods (`listTools()`, `callTool()`) — which is, in turn, exactly what the Mastra tool wrappers in `crm.tools.ts` call into (Q10's diagram). This table is the layer *underneath* that diagram: `McpClientService.callTool()` isn't itself an MCP primitive, it's a thin app-specific wrapper around the real primitive, `client.callTool()`, shown here.
