@@ -15,6 +15,11 @@ export class WorkflowsController {
     return this.workflowsService.listActions();
   }
 
+  @Get("briefings")
+  async listBriefings() {
+    return this.workflowsService.listBriefings();
+  }
+
   @Post("actions/:actionId/decision")
   async decideAction(@Param("actionId") actionId: string, @Body("decision") decision: string) {
     if (decision !== "approved" && decision !== "rejected") {

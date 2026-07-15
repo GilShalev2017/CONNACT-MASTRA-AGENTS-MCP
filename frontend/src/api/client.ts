@@ -55,6 +55,7 @@ export const api = {
   generateExecutiveBriefing: (customerId: string) =>
     request<ExecutiveBriefing>(`/workflows/executive-briefing/${customerId}`, { method: "POST" }),
   listActions: () => request<RecommendedAction[]>("/workflows/actions"),
+  listBriefings: () => request<ExecutiveBriefing[]>("/workflows/briefings"),
   decideAction: (actionId: string, decision: "approved" | "rejected") =>
     request<RecommendedAction>(`/workflows/actions/${actionId}/decision`, {
       method: "POST",

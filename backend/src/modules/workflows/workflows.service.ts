@@ -34,6 +34,11 @@ export class WorkflowsService implements OnModuleInit {
   private readonly logger = new Logger(WorkflowsService.name);
   private workflow!: Workflow<any, any, any, any, any, any>;
   private readonly pendingActions = new Map<string, RecommendedAction>();
+  // Latest generated briefing per customer, keyed by customerId - lets the
+  // UI show a customer's briefing summary alongside their recommended
+  // actions after the fact, not just immediately after generating it.
+  // Same in-memory-only tradeoff as `pendingActions` (see class doc).
+  private readonly briefingsByCustomer = new Map<string, ExecutiveBriefing>();
 
   constructor(
     private readonly mcpClient: McpClientService,
@@ -60,6 +65,7 @@ export class WorkflowsService implements OnModuleInit {
     }
 
     const briefing = result.result as ExecutiveBriefing;
+    this.briefingsByCustomer.set(customerId, briefing);
     for (const recommended of briefing.recommendedActions) {
       const actionId = randomUUID();
       this.pendingActions.set(actionId, {
@@ -76,6 +82,10 @@ export class WorkflowsService implements OnModuleInit {
 
   listActions(): RecommendedAction[] {
     return Array.from(this.pendingActions.values()).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }
+
+  listBriefings(): ExecutiveBriefing[] {
+    return Array.from(this.briefingsByCustomer.values()).sort((a, b) => b.generatedAt.localeCompare(a.generatedAt));
   }
 
   decideAction(actionId: string, decision: "approved" | "rejected"): RecommendedAction {

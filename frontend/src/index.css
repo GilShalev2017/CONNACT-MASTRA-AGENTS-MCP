@@ -17,3 +17,24 @@ html, body, #root {
 ::-webkit-scrollbar-track {
   background-color: transparent;
 }
+
+/* Indeterminate progress bar: duration of a workflow run isn't known
+   up front, so this animates a sliding segment across the track rather
+   than filling to a real percentage. */
+@keyframes indeterminate-progress {
+  0% {
+    left: -35%;
+    right: 100%;
+  }
+  60% {
+    left: 100%;
+    right: -90%;
+  }
+  100% {
+    left: 100%;
+    right: -90%;
+  }
+}
+.animate-indeterminate {
+  animation: indeterminate-progress 1.4s ease-in-out infinite;
+}
