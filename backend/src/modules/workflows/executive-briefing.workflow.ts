@@ -39,6 +39,19 @@ export function buildExecutiveBriefingWorkflow(deps: {
   embeddingService: EmbeddingService;
   briefingAgent: Agent;
 }) {
+  // --- Step 1: gather-crm-context -----------------------------------------
+  // inputSchema is just { customerId } - the raw input the whole workflow
+  // starts with (matches createWorkflow's own inputSchema below). No local
+  // try/catch here: if either MCP call throws (e.g. crm-mcp-server is
+  // down), the error propagates out of execute() uncaught. Mastra's own
+  // execution engine wraps every step's execute() in a try/catch - an
+  // uncaught throw here is what Mastra itself turns into
+  // `{ status: "failed", error }` for this step, which halts the chain
+  // (gatherKnowledgeContext/synthesizeBriefing never run) and makes
+  // run.start() resolve with WorkflowResult.status === "failed" instead of
+  // rejecting. WorkflowsService.generateExecutiveBriefing() checks exactly
+  // that status and throws, which the controller/LlmErrorFilter turns into
+  // a 500 - so a step-1 failure here is a hard stop for the whole briefing.
   const gatherCrmContext = createStep({
     id: "gather-crm-context",
     description: "Fetch the customer's CRM profile and meeting history via the CRM MCP server",
@@ -53,6 +66,18 @@ export function buildExecutiveBriefingWorkflow(deps: {
     },
   });
 
+  // --- Step 2: gather-knowledge-context ------------------------------------
+  // inputSchema here is literally `crmContextSchema` - the exact same Zod
+  // schema step 1 declared as its outputSchema. That's the chaining
+  // mechanism `.then()` relies on below: each step's inputSchema must
+  // match the previous step's outputSchema, so `inputData` here is
+  // guaranteed (by that shared schema, not by any check in this function)
+  // to already contain step 1's { customerId, customer, history }. This
+  // step then adds one field (`knowledgeExcerpts`) on top via
+  // `knowledgeContextSchema = crmContextSchema.extend({ ... })`. Same
+  // failure story as step 1: no local retry/catch - an uncaught throw
+  // (e.g. Qdrant unreachable) becomes a Mastra-level step failure and
+  // halts the chain before synthesizeBriefing ever runs.
   const gatherKnowledgeContext = createStep({
     id: "gather-knowledge-context",
     description: "Semantic search the RAG knowledge base for guidance relevant to this customer's profile",
@@ -70,6 +95,23 @@ export function buildExecutiveBriefingWorkflow(deps: {
     },
   });
 
+  // --- Step 3: synthesize-briefing ------------------------------------
+  // inputSchema is `knowledgeContextSchema` - step 2's outputSchema,
+  // same chaining pattern as step 2. outputSchema is the workflow's own
+  // final `executiveBriefingOutputSchema`, since this is the last step.
+  //
+  // Failure handling here is deliberately NOT the same as steps 1/2: this
+  // execute() has its own internal try/catch (see the retry loop below)
+  // and *never* lets an error escape uncaught - it always `return`s a
+  // valid object matching outputSchema, even in the worst case
+  // (`baseBriefing`, the "incomplete" placeholder). That means Mastra's
+  // execution engine always sees this step as `status: "success"`, never
+  // "failed" - unlike steps 1/2, a bad LLM response here can never halt
+  // the workflow or make run.start() report status "failed". The
+  // tradeoff: WorkflowsService/the caller has no way to distinguish "the
+  // briefing genuinely has no opportunities" from "generation failed
+  // twice and this is a placeholder" except by eyeballing the
+  // placeholder's literal executiveSummary text.
   const synthesizeBriefing = createStep({
     id: "synthesize-briefing",
     description: "Use the ExecutiveBriefingAgent to synthesize a grounded executive briefing",
@@ -110,6 +152,18 @@ export function buildExecutiveBriefingWorkflow(deps: {
       const maxAttempts = 2;
       for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         try {
+          // deps.briefingAgent is the tool-less ExecutiveBriefingAgent
+          // (Q15 in docs/Q & A.md - a "plain" agent, no tools/autonomy).
+          // All the actual data gathering already happened in steps 1-2;
+          // this call's only job is to turn the fully-assembled `prompt`
+          // (CRM profile + meeting history + knowledge excerpts, already
+          // stringified above) into the structured briefing text. Passing
+          // `{ output: schema }` asks the AI SDK to coerce the model's
+          // reply into a schema-validated object (`result.object`)
+          // instead of free text - the same structured-generation
+          // mechanism covered in Q2/Q16, which is exactly what
+          // occasionally fails and is what this retry loop exists to
+          // recover from.
           const result = await deps.briefingAgent.generate(prompt, { output: schema });
           const object = (result as any).object ?? null;
           const parsed = object ? schema.safeParse(object) : null;
@@ -137,6 +191,14 @@ export function buildExecutiveBriefingWorkflow(deps: {
     },
   });
 
+  // Schema chain: workflow inputSchema -> gatherCrmContext.outputSchema
+  // (crmContextSchema) -> gatherKnowledgeContext.inputSchema (same
+  // schema) -> gatherKnowledgeContext.outputSchema (knowledgeContextSchema)
+  // -> synthesizeBriefing.inputSchema (same schema) ->
+  // synthesizeBriefing.outputSchema (executiveBriefingOutputSchema) ->
+  // workflow outputSchema. Each `.then()` requires the two adjoining
+  // schemas to match, so the chain is both the runtime data pipe and a
+  // compile-time guarantee the steps actually fit together.
   return createWorkflow({
     id: "executive-briefing-workflow",
     inputSchema: z.object({ customerId: z.string() }),

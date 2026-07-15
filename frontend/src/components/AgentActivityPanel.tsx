@@ -1,3 +1,5 @@
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { ChatResponse } from "../types";
 
 /**
@@ -75,7 +77,9 @@ export default function AgentActivityPanel({ response }: { response: ChatRespons
                   {source.metadata.documentType}
                   {source.metadata.customerId ? ` · ${source.metadata.customerId}` : ""}
                 </div>
-                <p className="mt-2 line-clamp-3 text-xs text-slate-400">{source.text}</p>
+                <div className="prose prose-invert prose-sm mt-2 max-h-28 max-w-none overflow-y-auto pr-1 prose-p:my-1 prose-headings:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0 prose-p:text-xs prose-li:text-xs prose-headings:text-xs prose-strong:text-slate-200 prose-a:text-brand-300">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{source.text}</ReactMarkdown>
+                </div>
               </div>
             ))}
           </div>

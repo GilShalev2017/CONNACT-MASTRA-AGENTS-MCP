@@ -52,7 +52,15 @@ export default function WorkflowsPage() {
         </select>
         <button
           disabled={!customerId || briefingMutation.isPending}
-          onClick={() => briefingMutation.mutate()}
+          onClick={() => {
+            // useMutation keeps the previous result in `.data` until the
+            // new call resolves - without this, a stale briefing (or
+            // error) from a prior customer/attempt stays on screen
+            // throughout the new generation and would look like it
+            // belongs to the currently selected customer.
+            briefingMutation.reset();
+            briefingMutation.mutate();
+          }}
           className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-500 disabled:opacity-50"
         >
           {briefingMutation.isPending ? "Generating…" : "Generate briefing"}

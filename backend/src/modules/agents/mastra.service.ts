@@ -12,6 +12,7 @@ import { createSearchKnowledgeBaseTool } from "./tools/rag.tool.js";
 import { createCrmTools } from "./tools/crm.tools.js";
 import {
   CLOUD_PARTNERSHIP_AGENT_INSTRUCTIONS,
+  HISTORY_SUMMARIZER_AGENT_INSTRUCTIONS,
   MEETING_ANALYSIS_AGENT_INSTRUCTIONS,
   EXECUTIVE_BRIEFING_AGENT_INSTRUCTIONS,
 } from "./agent.config.js";
@@ -135,8 +136,7 @@ export class MastraService implements OnModuleInit {
 
     this.historySummarizerAgent = new Agent({
       name: "HistorySummarizerAgent",
-      instructions:
-        "You answer questions from structured CRM meeting-history data. Use only the provided data. Do not call any tools or invent details.",
+      instructions: HISTORY_SUMMARIZER_AGENT_INSTRUCTIONS,
       model,
     });
 
@@ -181,6 +181,13 @@ export class MastraService implements OnModuleInit {
    * of what happened - this is not the model's chain-of-thought, it's the
    * factual list of tool invocations, which is what "Agent Activity View"
    * is supposed to show.
+   */
+
+  /**
+  reshapes the Vercel AI SDK result into the ChatResponse contract,
+  it means: cloudPartnershipAgent.generate() ultimately returns whatever ai's generateText() produced:
+  (.text, .toolCalls, .steps, etc.), and chat()'s job is to map that generic shape into this app's own
+  ChatResponse interface for the frontend.
    */
   async chat(message: string, conversationId?: string): Promise<ChatResponse> {
     const convId = conversationId ?? randomUUID();

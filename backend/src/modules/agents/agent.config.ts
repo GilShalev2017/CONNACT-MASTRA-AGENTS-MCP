@@ -61,6 +61,11 @@ Your job:
    over long prose, especially when summarizing multiple customers.
 `.trim();
 
+export const HISTORY_SUMMARIZER_AGENT_INSTRUCTIONS = `
+You answer questions from structured CRM meeting-history data. Use only
+the provided data. Do not call any tools or invent details.
+`.trim();
+
 export const MEETING_ANALYSIS_AGENT_INSTRUCTIONS = `
 You are MeetingAnalysisAgent, a specialist that reads raw customer
 meeting transcripts and extracts structured intelligence: a concise

@@ -87,3 +87,22 @@ Zod gives one schema declaration both a runtime validator (`.parse`/`.safeParse`
 | `server.registerTool(name, config, callback)` | A `RegisteredTool` (sync) — also what makes the tool show up in `tools/list` |
 | `server.connect(transport)` / `new StreamableHTTPServerTransport()` / `transport.handleRequest(req, res)` | `Promise<void>` each — the transport writes the HTTP response directly |
 | `server.close()` / `transport.close()` | `Promise<void>` — torn down per-request, paired with construction above |
+
+## 19. Backend vs. `mcp-server` MongoDB access — Mongoose vs. native driver, and why
+
+| Backend (`@nestjs/mongoose`) | `mcp-server` (native `mongodb` driver) |
+| --- | --- |
+| Full ODM: `@Schema`/`@Prop` classes → typed `Model<T>` | Raw driver: `db.collection(name)`, no schema layer at all |
+| Schema enforces `required`/types — but only on writes made *through* Mongoose | No schema anywhere; reads/writes are loosely `any`-typed |
+| Connection managed by `MongooseModule` (DI-provided, pooled) | Hand-rolled singleton `MongoClient` in `db.ts` |
+| Query style: chainable builder (`.find().sort().lean()`) | Raw Mongo query documents (`.find({...}, {projection})`) |
+| Why: larger NestJS app — Mongoose is the framework-idiomatic, DI-friendly Mongo integration | Why: small single-purpose microservice (CRUD + seed) — a full ODM would be overkill |
+| Result: compile-time type safety on `customers`/`meetings` fields | Result: minimal dependencies, simplest possible fit for a narrow scope |
+
+Both write into the *same* physical `customers`/`meetings` collections (mcp-server seeds them; backend's `TranscriptionService` also mutates `meetings` via Mongoose) — two independently-maintained schema definitions of one shared contract, no shared source of truth.
+
+## 20. Do Qdrant points store text and metadata at the same level? Does cosine similarity use the text?
+Yes — `payload: { text, ...metadata }` in `upsertChunks()` is flat, one object, no nesting. But cosine similarity is computed on the separate `vector` field (the 384-number embedding), not on `text` or `payload` at all — `payload` is just metadata returned alongside a match, not used in the similarity math. Payload only matters for optional exact-match filtering (`customerId`/`documentType`), a separate mechanism from ranking.
+
+## 21. What does `score` mean in a search result?
+Cosine similarity between the query's embedding and that point's stored embedding — roughly 0 to 1, higher means more semantically similar. It reflects closeness in *meaning* per the embedding model, not factual correctness — a high score means "this chunk is about something similar to the question," not "this chunk correctly answers it."

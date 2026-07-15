@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ShortVersion_CodeBase_Quetsions_And_Answers</title>
+  <title>short</title>
   <style>
   @import url("https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.9.0-alpha2/katex.min.css");
 
@@ -218,6 +218,46 @@
 </tr>
 </tbody>
 </table>
+<h2 class="code-line has-line-data" data-line-start="90" data-line-end="91"><a id="19_Backend_vs_mcpserver_MongoDB_access_Mongoose_vs_native_driver_and_why_90"></a>19. Backend vs. <code>mcp-server</code> MongoDB access — Mongoose vs. native driver, and why</h2>
+<table class="table table-striped table-bordered">
+<thead>
+<tr>
+<th>Backend (<code>@nestjs/mongoose</code>)</th>
+<th><code>mcp-server</code> (native <code>mongodb</code> driver)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Full ODM: <code>@Schema</code>/<code>@Prop</code> classes → typed <code>Model&lt;T&gt;</code></td>
+<td>Raw driver: <code>db.collection(name)</code>, no schema layer at all</td>
+</tr>
+<tr>
+<td>Schema enforces <code>required</code>/types — but only on writes made <em>through</em> Mongoose</td>
+<td>No schema anywhere; reads/writes are loosely <code>any</code>-typed</td>
+</tr>
+<tr>
+<td>Connection managed by <code>MongooseModule</code> (DI-provided, pooled)</td>
+<td>Hand-rolled singleton <code>MongoClient</code> in <code>db.ts</code></td>
+</tr>
+<tr>
+<td>Query style: chainable builder (<code>.find().sort().lean()</code>)</td>
+<td>Raw Mongo query documents (<code>.find({...}, {projection})</code>)</td>
+</tr>
+<tr>
+<td>Why: larger NestJS app — Mongoose is the framework-idiomatic, DI-friendly Mongo integration</td>
+<td>Why: small single-purpose microservice (CRUD + seed) — a full ODM would be overkill</td>
+</tr>
+<tr>
+<td>Result: compile-time type safety on <code>customers</code>/<code>meetings</code> fields</td>
+<td>Result: minimal dependencies, simplest possible fit for a narrow scope</td>
+</tr>
+</tbody>
+</table>
+<p class="has-line-data" data-line-start="101" data-line-end="102">Both write into the <em>same</em> physical <code>customers</code>/<code>meetings</code> collections (mcp-server seeds them; backend’s <code>TranscriptionService</code> also mutates <code>meetings</code> via Mongoose) — two independently-maintained schema definitions of one shared contract, no shared source of truth.</p>
+<h2 class="code-line has-line-data" data-line-start="103" data-line-end="104"><a id="20_Do_Qdrant_points_store_text_and_metadata_at_the_same_level_Does_cosine_similarity_use_the_text_103"></a>20. Do Qdrant points store text and metadata at the same level? Does cosine similarity use the text?</h2>
+<p class="has-line-data" data-line-start="104" data-line-end="105">Yes — <code>payload: { text, ...metadata }</code> in <code>upsertChunks()</code> is flat, one object, no nesting. But cosine similarity is computed on the separate <code>vector</code> field (the 384-number embedding), not on <code>text</code> or <code>payload</code> at all — <code>payload</code> is just metadata returned alongside a match, not used in the similarity math. Payload only matters for optional exact-match filtering (<code>customerId</code>/<code>documentType</code>), a separate mechanism from ranking.</p>
+<h2 class="code-line has-line-data" data-line-start="106" data-line-end="107"><a id="21_What_does_score_mean_in_a_search_result_106"></a>21. What does <code>score</code> mean in a search result?</h2>
+<p class="has-line-data" data-line-start="107" data-line-end="108">Cosine similarity between the query’s embedding and that point’s stored embedding — roughly 0 to 1, higher means more semantically similar. It reflects closeness in <em>meaning</em> per the embedding model, not factual correctness — a high score means “this chunk is about something similar to the question,” not “this chunk correctly answers it.”</p>
 
 </body>
 </html>
