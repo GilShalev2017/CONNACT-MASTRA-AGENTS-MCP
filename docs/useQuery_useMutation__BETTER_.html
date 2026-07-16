@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>useQuery useMutation (BETTER)</title>
+  <style>
+  @import url("https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.9.0-alpha2/katex.min.css");
+
+  body {
+    font-family: Georgia, Cambria, serif;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #373D49;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: "Source Sans Pro", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: 600;
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+  }
+  h1 { font-size: 2em; }
+  h2 { font-size: 1.5em; }
+  h3 { font-size: 1.25em; }
+  a { color: #35D7BB; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code {
+    font-family: "Ubuntu Mono", Monaco, monospace;
+    background: #F5F7FA;
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+  }
+  pre {
+    background: #F5F7FA;
+    padding: 1em;
+    border-radius: 3px;
+    overflow-x: auto;
+  }
+  .hljs {
+    display: block;
+    overflow-x: auto;
+    padding: 0;
+    color: #333;
+  }
+  pre code { background: none; padding: 0; }
+  blockquote {
+    border-left: 3px solid #A0AABF;
+    padding-left: 1em;
+    margin-left: 0;
+    font-style: italic;
+    color: #666;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+  th, td {
+    border: 1px solid #E8E8E8;
+    padding: 0.5em;
+    text-align: left;
+  }
+  th {
+    background: #F5F7FA;
+    font-weight: 600;
+  }
+  #preview .table {
+    width: auto;
+  }
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+  .katex-display {
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+</style>
+</head>
+<body id="preview">
+<h2 class="code-line has-line-data" data-line-start="0" data-line-end="1"><a id="useQuery_useMutation_TanStack_Query_vs_Raw_fetch_axios_0"></a><code>useQuery</code> / <code>useMutation</code> (TanStack Query) vs. Raw <code>fetch</code> / <code>axios</code></h2>
+<h3 class="code-line has-line-data" data-line-start="2" data-line-end="3"><a id="Advantages_of_TanStack_Query_2"></a>Advantages of TanStack Query</h3>
+<table class="table table-striped table-bordered">
+<thead>
+<tr>
+<th>Feature</th>
+<th>TanStack Query</th>
+<th>Raw <code>fetch</code> / <code>axios</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Caching</strong></td>
+<td>Results are cached by <strong>query key</strong>. Repeat requests for the same data are served instantly instead of re-fetching.</td>
+<td>❌ Must implement caching yourself.</td>
+</tr>
+<tr>
+<td><strong>Request Deduplication</strong></td>
+<td>Multiple components requesting the same data simultaneously trigger <strong>only one network request</strong>.</td>
+<td>❌ Each component issues its own request.</td>
+</tr>
+<tr>
+<td><strong>Background Refetching</strong></td>
+<td>Automatically refetches on window focus, reconnect, intervals, or when data becomes stale.</td>
+<td>❌ Manual polling/refetch logic required.</td>
+</tr>
+<tr>
+<td><strong>Loading &amp; Error State</strong></td>
+<td>Built-in <code>isLoading</code>, <code>isFetching</code>, <code>isError</code>, etc. No <code>useEffect</code> boilerplate needed.</td>
+<td>❌ Must manage loading/error state manually.</td>
+</tr>
+<tr>
+<td><strong>Retries &amp; Backoff</strong></td>
+<td>Automatic retries with configurable exponential backoff.</td>
+<td>❌ Must implement retry logic yourself.</td>
+</tr>
+<tr>
+<td><strong>Optimistic Updates &amp; Cache Invalidation</strong></td>
+<td><code>useMutation</code> supports optimistic UI updates, rollback on failure, and invalidating related queries after mutations.</td>
+<td>❌ Must manually update UI and cached data.</td>
+</tr>
+<tr>
+<td><strong>Request Cancellation</strong></td>
+<td>Automatically cancels stale requests when components unmount or query parameters change.</td>
+<td>❌ Must use <code>AbortController</code> or similar manually.</td>
+</tr>
+<tr>
+<td><strong>DevTools</strong></td>
+<td>Built-in DevTools for inspecting query cache and request state.</td>
+<td>❌ No built-in debugging tools.</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p class="has-line-data" data-line-start="15" data-line-end="17"><strong>Summary:</strong><br>
+Raw <code>fetch</code> or <code>axios</code> only performs the HTTP request. Everything else—caching, retries, loading states, deduplication, refetching, optimistic updates, and cache invalidation—must be implemented manually.</p>
+</blockquote>
+<hr>
+<h1 class="code-line has-line-data" data-line-start="20" data-line-end="21"><a id="When_are_they_called_20"></a>When are they called?</h1>
+<h2 class="code-line has-line-data" data-line-start="22" data-line-end="23"><a id="useQuery_22"></a><code>useQuery</code></h2>
+<p class="has-line-data" data-line-start="24" data-line-end="25">Used for <strong>reading data (GET-like requests)</strong>.</p>
+<h3 class="code-line has-line-data" data-line-start="26" data-line-end="27"><a id="Characteristics_26"></a>Characteristics</h3>
+<ul>
+<li class="has-line-data" data-line-start="28" data-line-end="29">Runs <strong>automatically</strong> when the component mounts.</li>
+<li class="has-line-data" data-line-start="29" data-line-end="30">Re-runs whenever the <strong><code>queryKey</code> changes</strong>.</li>
+<li class="has-line-data" data-line-start="30" data-line-end="35">Can automatically refetch when:
+<ul>
+<li class="has-line-data" data-line-start="31" data-line-end="32">the window regains focus,</li>
+<li class="has-line-data" data-line-start="32" data-line-end="33">the network reconnects,</li>
+<li class="has-line-data" data-line-start="33" data-line-end="34">data becomes stale,</li>
+<li class="has-line-data" data-line-start="34" data-line-end="35">a polling interval is configured.</li>
+</ul>
+</li>
+<li class="has-line-data" data-line-start="35" data-line-end="37">Declarative—you describe <strong>what data you need</strong>, not <strong>when to fetch it</strong>.</li>
+</ul>
+<pre><code class="has-line-data language-tsx" data-line-start="38" data-line-end="43"><span class="hljs-keyword">const</span> { data, isLoading } = <span class="hljs-title function_">useQuery</span>({
+  <span class="hljs-attr">queryKey</span>: [<span class="hljs-string">&quot;users&quot;</span>],
+  <span class="hljs-attr">queryFn</span>: fetchUsers,
+});
+</code></pre>
+<hr>
+<h2 class="code-line has-line-data" data-line-start="46" data-line-end="47"><a id="useMutation_46"></a><code>useMutation</code></h2>
+<p class="has-line-data" data-line-start="48" data-line-end="49">Used for <strong>changing data (POST, PUT, PATCH, DELETE)</strong> or any side effects.</p>
+<h3 class="code-line has-line-data" data-line-start="50" data-line-end="51"><a id="Characteristics_50"></a>Characteristics</h3>
+<ul>
+<li class="has-line-data" data-line-start="52" data-line-end="53"><strong>Does not run automatically.</strong></li>
+<li class="has-line-data" data-line-start="53" data-line-end="54">Returns a <code>mutate()</code> / <code>mutateAsync()</code> function.</li>
+<li class="has-line-data" data-line-start="54" data-line-end="59">You call it <strong>imperatively</strong>, typically from:
+<ul>
+<li class="has-line-data" data-line-start="55" data-line-end="56">button clicks,</li>
+<li class="has-line-data" data-line-start="56" data-line-end="57">form submissions,</li>
+<li class="has-line-data" data-line-start="57" data-line-end="59">user actions.</li>
+</ul>
+</li>
+</ul>
+<pre><code class="has-line-data language-tsx" data-line-start="60" data-line-end="68"><span class="hljs-keyword">const</span> mutation = <span class="hljs-title function_">useMutation</span>({
+  <span class="hljs-attr">mutationFn</span>: createUser,
+});
+
+<span class="language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onClick</span>=<span class="hljs-string">{()</span> =&gt;</span> mutation.mutate(user)}&gt;
+  Create User
+<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span></span>
+</code></pre>
+<p class="has-line-data" data-line-start="69" data-line-end="70">After a successful mutation, you’ll usually invalidate related queries so they refetch fresh data:</p>
+<pre><code class="has-line-data language-tsx" data-line-start="72" data-line-end="81"><span class="hljs-keyword">const</span> queryClient = <span class="hljs-title function_">useQueryClient</span>();
+
+<span class="hljs-keyword">const</span> mutation = <span class="hljs-title function_">useMutation</span>({
+  <span class="hljs-attr">mutationFn</span>: createUser,
+  <span class="hljs-attr">onSuccess</span>: <span class="hljs-function">() =&gt;</span> {
+    queryClient.<span class="hljs-title function_">invalidateQueries</span>({ <span class="hljs-attr">queryKey</span>: [<span class="hljs-string">&quot;users&quot;</span>] });
+  },
+});
+</code></pre>
+<hr>
+<h1 class="code-line has-line-data" data-line-start="84" data-line-end="85"><a id="Rule_of_Thumb_84"></a>Rule of Thumb</h1>
+<table class="table table-striped table-bordered">
+<thead>
+<tr>
+<th><code>useQuery</code></th>
+<th><code>useMutation</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Read data</strong></td>
+<td><strong>Modify data</strong></td>
+</tr>
+<tr>
+<td>GET requests</td>
+<td>POST / PUT / PATCH / DELETE</td>
+</tr>
+<tr>
+<td>Runs automatically</td>
+<td>Triggered manually</td>
+</tr>
+<tr>
+<td>Declarative</td>
+<td>Imperative</td>
+</tr>
+<tr>
+<td>Keeps cache fresh</td>
+<td>Updates server, then refreshes/invalidate cache</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p class="has-line-data" data-line-start="94" data-line-end="95"><strong>Easy way to remember:</strong></p>
+<ul>
+<li class="has-line-data" data-line-start="95" data-line-end="96"><strong><code>useQuery</code> = Automatic + Read data</strong></li>
+<li class="has-line-data" data-line-start="96" data-line-end="97"><strong><code>useMutation</code> = Manual + Change data</strong></li>
+</ul>
+</blockquote>
+
+</body>
+</html>

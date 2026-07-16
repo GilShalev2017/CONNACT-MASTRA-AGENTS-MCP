@@ -1,0 +1,2 @@
+1. which of our customers is the most healthy? tools used: listCustomersX1, 6X getCustomerCloudUsage (for every client)
+2. give me churn-risk mitigation strategies for the Summit Logistics Co account.Tools used: getCustomer, getCustomerHistory, getCustomerCloudUsage, searchKnowledgeBase X 3 !!!
