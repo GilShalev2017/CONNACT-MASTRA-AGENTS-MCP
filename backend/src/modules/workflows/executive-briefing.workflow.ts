@@ -1,5 +1,6 @@
 import { createStep, createWorkflow } from "@mastra/core/workflows";
 import { Agent } from "@mastra/core/agent";
+import { NoObjectGeneratedError } from "ai";
 import { z } from "zod";
 import { McpClientService } from "../mcp/mcp-client.service.js";
 import { VectorService } from "../vector/vector.service.js";
@@ -14,6 +15,123 @@ const crmContextSchema = z.object({
 const knowledgeContextSchema = crmContextSchema.extend({
   knowledgeExcerpts: z.array(z.object({ text: z.string(), source: z.string() })),
 });
+
+/**
+ * `Agent.generate()` throws a `MastraError` wrapping `AI_NoObjectGeneratedError`
+ * wrapping `AI_TypeValidationError` when the model's structured-output
+ * response fails the AI SDK's own schema check - the itemized "expected
+ * array, received string"-style detail lives several `.cause` levels
+ * deep, not on the top-level error's own `.message`. Walk the chain so
+ * both logs and the retry loop's corrective prompt get the useful part.
+ */
+function describeGenerationError(error: unknown): string {
+  if (!(error instanceof Error)) return String(error);
+  let current: unknown = error;
+  let deepest = error.message;
+  for (let depth = 0; depth < 4 && current instanceof Error; depth++) {
+    deepest = current.message;
+    current = (current as { cause?: unknown }).cause;
+  }
+  return deepest;
+}
+
+/**
+ * When the AI SDK's own internal schema check fails, it throws
+ * `NoObjectGeneratedError` *before* `Agent.generate()` ever returns
+ * anything to us - so the happy-path recovery below (on `result.object`)
+ * never runs for this case, even though `NoObjectGeneratedError` itself
+ * carries the raw generated `.text`. Walk the thrown error's `.cause`
+ * chain looking for it, parse that raw text back into an object, and
+ * hand it to the same recovery path a successful-but-malformed
+ * `result.object` would have gone through.
+ */
+function extractRawObjectFromThrownError(error: unknown): Record<string, unknown> | null {
+  let current: unknown = error;
+  for (let depth = 0; depth < 4 && current; depth++) {
+    if (NoObjectGeneratedError.isInstance(current) && current.text) {
+      try {
+        return JSON.parse(current.text);
+      } catch {
+        return null;
+      }
+    }
+    current = current instanceof Error ? (current as { cause?: unknown }).cause : undefined;
+  }
+  return null;
+}
+
+/**
+ * The model has a recurring, hard-to-prompt-away quirk (seen repeatedly
+ * in production use, even after feeding the schema error back on retry):
+ * instead of a real JSON array, it sometimes emits a single string with
+ * items wrapped in ad-hoc XML-like tags, e.g.
+ * `"\n<opp>First item</opp>\n<opp>Second item</opp>\n"`. A rarer variant
+ * emits a real JSON array literal but wraps it in stray junk, e.g.
+ * `"\n<parameter name=\"keyOpportunities\">[\"First\", \"Second\"]"`
+ * (no closing tag, looks like a leaked/hallucinated tool-call format
+ * from a different prompting convention). Retrying costs an extra LLM
+ * round trip and isn't reliable - both shapes are consistent enough to
+ * recover deterministically. Returns the original value unchanged if
+ * neither pattern matches, so a genuine validation failure (e.g. the
+ * field was never generated at all) still falls through to the retry
+ * loop as before.
+ */
+function recoverTaggedStringArray(value: unknown): unknown {
+  if (typeof value !== "string") return value;
+
+  const tagMatches = [...value.matchAll(/<(\w+)>([\s\S]*?)<\/\1>/g)];
+  if (tagMatches.length > 0) {
+    const items = tagMatches.map((m) => m[2].trim()).filter(Boolean);
+    if (items.length > 0) return items;
+  }
+
+  const bracketMatch = value.match(/\[[\s\S]*\]/);
+  if (bracketMatch) {
+    try {
+      const parsed = JSON.parse(bracketMatch[0]);
+      if (Array.isArray(parsed) && parsed.every((item) => typeof item === "string")) return parsed;
+    } catch {
+      // fall through - leave value unchanged
+    }
+  }
+
+  return value;
+}
+
+/**
+ * Same quirk as `recoverTaggedStringArray`, but for `recommendedActions`
+ * - an array of `{ action, rationale }` objects rather than plain
+ * strings. Observed shapes nest an `<action>`/`<rationale>` pair per
+ * item (optionally inside an outer wrapper tag); rather than depend on
+ * the exact wrapper name, pull every `<action>`/`<rationale>` tag in
+ * document order and zip them pairwise.
+ */
+function recoverTaggedActionArray(value: unknown): unknown {
+  if (typeof value !== "string") return value;
+
+  const actions = [...value.matchAll(/<action>([\s\S]*?)<\/action>/g)].map((m) => m[1].trim());
+  const rationales = [...value.matchAll(/<rationale>([\s\S]*?)<\/rationale>/g)].map((m) => m[1].trim());
+  if (actions.length > 0 && actions.length === rationales.length) {
+    return actions.map((action, i) => ({ action, rationale: rationales[i] }));
+  }
+
+  const bracketMatch = value.match(/\[[\s\S]*\]/);
+  if (bracketMatch) {
+    try {
+      const parsed = JSON.parse(bracketMatch[0]);
+      if (
+        Array.isArray(parsed) &&
+        parsed.every((item) => item && typeof item.action === "string" && typeof item.rationale === "string")
+      ) {
+        return parsed;
+      }
+    } catch {
+      // fall through - leave value unchanged
+    }
+  }
+
+  return value;
+}
 
 export const executiveBriefingOutputSchema = z.object({
   customerId: z.string(),
@@ -100,18 +218,18 @@ export function buildExecutiveBriefingWorkflow(deps: {
   // same chaining pattern as step 2. outputSchema is the workflow's own
   // final `executiveBriefingOutputSchema`, since this is the last step.
   //
-  // Failure handling here is deliberately NOT the same as steps 1/2: this
-  // execute() has its own internal try/catch (see the retry loop below)
-  // and *never* lets an error escape uncaught - it always `return`s a
-  // valid object matching outputSchema, even in the worst case
-  // (`baseBriefing`, the "incomplete" placeholder). That means Mastra's
-  // execution engine always sees this step as `status: "success"`, never
-  // "failed" - unlike steps 1/2, a bad LLM response here can never halt
-  // the workflow or make run.start() report status "failed". The
-  // tradeoff: WorkflowsService/the caller has no way to distinguish "the
-  // briefing genuinely has no opportunities" from "generation failed
-  // twice and this is a placeholder" except by eyeballing the
-  // placeholder's literal executiveSummary text.
+  // Failure handling here used to always return a placeholder object
+  // instead of throwing, which meant Mastra never saw this step as
+  // "failed" - but that let a failed *re-generation* silently overwrite
+  // a previously good, already-persisted briefing for the same customer
+  // (WorkflowsService.briefingsByCustomer.set() runs unconditionally on
+  // whatever comes back as "successful"). Now this step throws after
+  // exhausting its retries, same as steps 1/2: an uncaught throw here
+  // becomes a Mastra-level step failure, halts the chain, and makes
+  // run.start() report status "failed" - WorkflowsService's existing
+  // `if (result.status !== "success") throw` then fires *before*
+  // reaching the briefingsByCustomer.set() line, so a prior good
+  // briefing for this customer is never touched by a failed attempt.
   const synthesizeBriefing = createStep({
     id: "synthesize-briefing",
     description: "Use the ExecutiveBriefingAgent to synthesize a grounded executive briefing",
@@ -124,6 +242,8 @@ export function buildExecutiveBriefingWorkflow(deps: {
         `Meeting history:\n${JSON.stringify(inputData.history, null, 2)}`,
         `Relevant knowledge base excerpts:\n${inputData.knowledgeExcerpts.map((k) => `- (${k.source}) ${k.text}`).join("\n")}`,
         "Produce the executive briefing now.",
+        'keyOpportunities and keyRisks must be actual JSON arrays of plain strings - never a single string, and never wrapped in XML-like tags such as <opp> or <item>.',
+        'recommendedActions must be a JSON array of objects with exactly two string fields, "action" and "rationale" - never a string, never XML-tagged.',
       ].join("\n\n");
 
       const schema = z.object({
@@ -137,19 +257,33 @@ export function buildExecutiveBriefingWorkflow(deps: {
         customerId: inputData.customerId,
         customerName: customer.name ?? inputData.customerId,
         generatedAt: new Date().toISOString(),
-        executiveSummary: "Executive briefing generation was incomplete. Please review the customer context and try again.",
-        keyOpportunities: [] as string[],
-        keyRisks: [] as string[],
-        recommendedActions: [] as Array<{ action: string; rationale: string }>,
       };
+
+      // Applies the deterministic tag-recovery to a raw object (whether
+      // it came back as `result.object` or was pulled out of a thrown
+      // NoObjectGeneratedError's raw text) and validates the result -
+      // shared by both the happy path and the catch block below.
+      function recoverAndParse(object: Record<string, unknown>) {
+        object.keyOpportunities = recoverTaggedStringArray(object.keyOpportunities);
+        object.keyRisks = recoverTaggedStringArray(object.keyRisks);
+        object.recommendedActions = recoverTaggedActionArray(object.recommendedActions);
+        return schema.safeParse(object);
+      }
 
       // The model occasionally ignores the tool schema's array types and
       // stuffs list fields (keyOpportunities, keyRisks, recommendedActions)
       // into a single XML-tagged string instead, which fails Zod
-      // validation. Feed the validation error back and give it one shot
-      // to self-correct before falling back to the placeholder briefing.
+      // validation - either returned as a malformed object (caught below
+      // via schema.safeParse) or thrown directly out of generate() as
+      // AI_NoObjectGeneratedError (caught in the catch block). Both paths
+      // now feed the failure detail back into the next attempt's prompt.
       let prompt = basePrompt;
-      const maxAttempts = 2;
+      let lastIssue = "no object was returned";
+      // 2 wasn't enough in practice - live testing showed individual
+      // attempts succeed cleanly most of the time, so a 3rd attempt
+      // meaningfully raises the odds of landing a valid response instead
+      // of exhausting retries on back-to-back unlucky generations.
+      const maxAttempts = 3;
       for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         try {
           // deps.briefingAgent is the tool-less ExecutiveBriefingAgent
@@ -165,29 +299,45 @@ export function buildExecutiveBriefingWorkflow(deps: {
           // occasionally fails and is what this retry loop exists to
           // recover from.
           const result = await deps.briefingAgent.generate(prompt, { output: schema });
-          const object = (result as any).object ?? null;
-          const parsed = object ? schema.safeParse(object) : null;
+          const object = (result as any).object as Record<string, unknown> | null | undefined;
+          const parsed = object ? recoverAndParse(object) : null;
 
           if (parsed?.success) {
             return { ...baseBriefing, ...parsed.data };
           }
 
-          const issue = parsed && !parsed.success ? parsed.error.message : "no object was returned";
-          console.error(`[executive-briefing] attempt ${attempt} produced an invalid object:`, issue);
-
-          prompt = [
-            basePrompt,
-            `Your previous response did not match the required schema: ${issue}`,
-            'keyOpportunities and keyRisks must each be a JSON array of plain strings - no XML tags, no nesting, no single combined string.',
-            'recommendedActions must be a JSON array of objects, each with exactly two string fields: "action" and "rationale".',
-            "Call the structured output tool again with corrected values matching the schema exactly.",
-          ].join("\n\n");
+          lastIssue = parsed && !parsed.success ? parsed.error.message : "no object was returned";
+          console.error(`[executive-briefing] attempt ${attempt} produced an invalid object:`, lastIssue);
         } catch (error) {
-          console.error(`[executive-briefing] attempt ${attempt} failed:`, error);
+          // Most real failures land here: the AI SDK's own internal
+          // schema check rejects the response and throws before
+          // Agent.generate() ever returns `result.object` to us - so the
+          // happy-path recovery above never even runs. Recover the raw
+          // text out of the thrown error and try the same repair here.
+          const rawObject = extractRawObjectFromThrownError(error);
+          const recovered = rawObject ? recoverAndParse(rawObject) : null;
+          if (recovered?.success) {
+            return { ...baseBriefing, ...recovered.data };
+          }
+
+          lastIssue = describeGenerationError(error);
+          console.error(`[executive-briefing] attempt ${attempt} failed:`, lastIssue);
         }
+
+        prompt = [
+          basePrompt,
+          `Your previous response did not match the required schema: ${lastIssue}`,
+          'keyOpportunities and keyRisks must each be a JSON array of plain strings - no XML tags, no nesting, no single combined string.',
+          'recommendedActions must be a JSON array of objects, each with exactly two string fields: "action" and "rationale".',
+          "Call the structured output tool again with corrected values matching the schema exactly.",
+        ].join("\n\n");
       }
 
-      return baseBriefing;
+      // Every attempt failed - throw rather than return a placeholder, so
+      // Mastra marks this step (and the whole run) "failed" instead of a
+      // fake "success" that would otherwise overwrite a previously good
+      // briefing for this customer (see the comment above this step).
+      throw new Error(`Failed to generate a valid executive briefing after ${maxAttempts} attempts: ${lastIssue}`);
     },
   });
 

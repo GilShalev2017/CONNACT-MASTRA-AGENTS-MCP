@@ -61,7 +61,12 @@ export class WorkflowsService implements OnModuleInit {
     const result = await run.start({ inputData: { customerId } });
 
     if (result.status !== "success") {
-      throw new Error(`Executive briefing workflow did not complete successfully (status=${result.status})`);
+      // Mastra stores a step failure's `error` as its stack trace string
+      // (a runtime quirk - the WorkflowResult type claims `Error`, but
+      // it's actually already-stringified), so take just the first line
+      // rather than dumping the whole stack into the HTTP error body.
+      const detail = "error" in result ? String(result.error).split("\n")[0] : `status=${result.status}`;
+      throw new Error(`Executive briefing workflow did not complete successfully: ${detail}`);
     }
 
     const briefing = result.result as ExecutiveBriefing;
